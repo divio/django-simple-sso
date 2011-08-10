@@ -48,7 +48,8 @@ class AuthorizeForm(BaseForm):
             token = Token.objects.get(request_token=request_token, client=self.client, user__isnull=True)
         except Token.DoesNotExist:
             raise forms.ValidationError('Invalid request token')
-        return token
+        data['token'] = token
+        return data
 
 
 class VerificationForm(BaseForm):
@@ -64,4 +65,5 @@ class VerificationForm(BaseForm):
             token = Token.objects.get(auth_token=auth_token, user__isnull=False, client=self.client)
         except Token.DoesNotExist:
             raise forms.ValidationError('Invalid auth token')
-        return token
+        data['token'] = token
+        return data

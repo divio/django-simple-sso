@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 from django.conf.urls.defaults import patterns, url, include
+from django.http import HttpResponse
 import sys
 
 urlpatterns = patterns('',
     url('^server/', include('simple_sso.sso_server.urls')),
     url('^client/', include('simple_sso.sso_client.urls')),
+    url(r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
+    url('^$', lambda request: HttpResponse('home'), name='root')
 )
 
 INSTALLED_APPS = [
@@ -24,17 +27,13 @@ DATABASES = {
     }
 }
 
-def teardown(state):
-    from django.conf import settings
-    # Restore the old settings.
-    for key, value in state.items():
-        setattr(settings, key, value)
+ROOT_URLCONF = 'runtests'
 
 def run_tests():
     from django.conf import settings
     settings.configure(
         INSTALLED_APPS = INSTALLED_APPS,
-        ROOT_URLCONF = 'runtests',
+        ROOT_URLCONF = ROOT_URLCONF,
         DATABASES = DATABASES,
         TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner',
         SIMPLE_SSO_SERVER = '/server/',

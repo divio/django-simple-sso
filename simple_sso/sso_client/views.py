@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
@@ -30,7 +29,7 @@ def get_request_token():
     if 'request_token' not in data:
         return False
     params = [(key, value) for key,value in data.items() if key != 'signature']
-    if not verify_signature(params, data['signature']):
+    if not verify_signature(params, data['signature'], settings.SIMPLE_SSO_SECRET):
         return False
     return data['request_token']
 
@@ -45,7 +44,7 @@ def verify_auth_token(data):
         return False
     auth_token = data['auth_token']
     params = [('auth_token', auth_token), ('key', settings.SIMPLE_SSO_KEY)]
-    signature = build_signature(params)
+    signature = build_signature(params, settings.SIMPLE_SSO_SECRET)
     params.append(('signature', signature))
     url = urljoin(settings.SIMPLE_SSO_SERVER, 'verify') + '/'
     response = requests.get(url, dict(params))
@@ -57,7 +56,7 @@ def verify_auth_token(data):
     if 'user' not in data:
         return False
     params = [(key, value) for key,value in data.items() if key != 'signature']
-    if not verify_signature(params, data['signature']):
+    if not verify_signature(params, data['signature'], settings.SIMPLE_SSO_SECRET):
         return False
     return load_json_user(data['user'])
 
@@ -88,9 +87,9 @@ def login_view(request):
     request.session['simple-sso-next'] = next
     request_token = get_request_token()
     if not request_token:
-        raise HttpResponseBadRequest()
+        return HttpResponseBadRequest()
     params = [('request_token', request_token), ('key', settings.SIMPLE_SSO_KEY)]
-    signature = build_signature(params)
+    signature = build_signature(params, settings.SIMPLE_SSO_SECRET)
     params.append(('signature', signature))
     query_string = urllib.urlencode(params)
     url = urljoin(settings.SIMPLE_SSO_SERVER, 'authorize') + '/'
@@ -104,7 +103,7 @@ def authenticate_view(request):
     """
     user = verify_auth_token(request.GET)
     if not user:
-        raise HttpResponseBadRequest()
+        return HttpResponseBadRequest()
     user.backend = "%s.%s" % (BACKEND.__module__, BACKEND.__class__.__name__)
     login(request, user)
     return HttpResponseRedirect(request.session.get('simple-sso-next', '/'))

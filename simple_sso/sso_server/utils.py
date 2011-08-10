@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.utils import simplejson
 from django_load.core import load_object
+from simple_sso.utils import SIMPLE_KEYS
 
 
 def default_construct_user(user, client):
@@ -9,16 +10,8 @@ def default_construct_user(user, client):
     Default user constructor. Ignores the client and returns the Django User
     as a dictionary with the fields required by the specifications.
     """
-    simple_keys = [
-        'username',
-        'first_name',
-        'last_name',
-        'email',
-        'is_staff',
-        'is_superuser',
-    ]
     data = {}
-    for key in simple_keys:
+    for key in SIMPLE_KEYS:
         data[key] = getattr(user, key)
     data['permissions'] = []
     for perm in user.user_permissions.select_related('content_type').all():

@@ -11,7 +11,7 @@ def build_signature(parameters, secret):
     Parameters is a list of tuples.
     """
     message = urllib.urlencode(sorted(parameters))
-    return hmac.new(secret, message, hashlib.sha256).hexdigest()
+    return hmac.new(secret.encode('ascii'), message.encode('ascii'), hashlib.sha256).hexdigest()
 
 def verify_signature(parameters, signature, secret):
     """

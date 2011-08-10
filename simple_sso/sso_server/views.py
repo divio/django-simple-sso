@@ -16,7 +16,7 @@ def request_token(request):
     if form.is_valid():
         token = Token.objects.create_for_client(form.client)
         params = [('request_token', token.request_token)]
-        signature = build_signature(params)
+        signature = build_signature(params, token.client.secret)
         params.append(('signature', signature))
         data = urllib.urlencode(params)
         return HttpResponse(data)
@@ -28,11 +28,11 @@ def request_token(request):
 def authorize(request):
     form = AuthorizeForm(request.GET)
     if form.is_valid():
-        token = form.cleaned_data['request_token']
+        token = form.cleaned_data['token']
         if request.user.is_authenticated():
             url = urljoin(token.client.root_url, 'authenticate') + '/'
             params = [('request_token', token.request_token), ('auth_token', token.auth_token)]
-            signature = build_signature(params)
+            signature = build_signature(params, token.client.secret)
             params.append(('signature', signature))
             token.user = request.user
             token.save()
@@ -48,10 +48,10 @@ def authorize(request):
 def verify(request):
     form = VerificationForm(request.GET)
     if form.is_valid():
-        token = form.cleaned_data['auth_token']
+        token = form.cleaned_data['token']
         user = get_user_json(token.user, token.client)
         params = [('user', user)]
-        signature = build_signature(params)
+        signature = build_signature(params, token.client.secret)
         params.append(('signature', signature))
         data = urllib.urlencode(params)
         token.delete()

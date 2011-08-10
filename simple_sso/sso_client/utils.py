@@ -2,27 +2,19 @@
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
+from simple_sso.utils import SIMPLE_KEYS
 
 def load_json_user(json):
     """
     Given a JSON string, returns a Django User instance.
     """
-    simple_keys = [
-        'username',
-        'first_name',
-        'last_name',
-        'email',
-        'is_staff',
-        'is_superuser',
-    ]
-    
     data = simplejson.loads(json)
     try:
         user = User.objects.get(username=data['username'])
     except User.DoesNotExist:
         user = User()
     
-    for key in simple_keys:
+    for key in SIMPLE_KEYS:
         setattr(user, key, data[key])
     user.set_unusable_password()
     user.save()
