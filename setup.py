@@ -1,6 +1,6 @@
-import os
-from setuptools import setup
+from setuptools import setup, find_packages
 from simple_sso import __version__ as version
+import os
 
 README = os.path.join(os.path.dirname(__file__), 'README.rst')
 
@@ -24,7 +24,7 @@ setup(name="django-simple-sso",
     author_email='jonas.obrist@divio.ch',
     url='http://github.com/ojii/django-simple-sso',
     license='BSD',
-    packages=['simple_sso', 'simple_sso.sso_client', 'simple_sso.sso_server'],
+    packages=find_packages(),
     install_requires=['Django>=1.3', 'django-load', 'requests', 'south'],
     include_package_data=True,
     zip_safe=False
