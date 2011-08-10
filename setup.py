@@ -25,7 +25,7 @@ setup(name="django-simple-sso",
     url='http://github.com/ojii/django-simple-sso',
     license='BSD',
     packages=['simple_sso', 'simple_sso.sso_client', 'simple_sso.sso_server'],
-    install_requires=['Django>=1.3', 'django-load', 'requests'],
+    install_requires=['Django>=1.3', 'django-load', 'requests', 'south'],
     include_package_data=True,
     zip_safe=False
 )
