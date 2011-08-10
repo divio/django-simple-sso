@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-import os
+from django.conf.urls.defaults import patterns, url, include
 import sys
+
+urlpatterns = patterns('',
+    url('^server/', include('simple_sso.sso_server.urls')),
+    url('^client/', include('simple_sso.sso_client.urls')),
+)
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -32,6 +37,7 @@ def run_tests():
         ROOT_URLCONF = 'runtests',
         DATABASES = DATABASES,
         TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner',
+        SIMPLE_SSO_SERVER = '/server/',
     )
 
     # Run the test suite, including the extra validation tests.
@@ -47,4 +53,3 @@ if __name__ == "__main__":
     failures = run_tests()
     if failures:
         sys.exit(bool(failures))
-    

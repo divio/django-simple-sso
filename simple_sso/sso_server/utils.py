@@ -28,12 +28,13 @@ def default_construct_user(user, client):
         })
     return data
 
-# load custom constructor if available
-constructor_setting = getattr(settings, 'SIMPLE_SSO_USER_CONSTRUCTOR', None)
-if constructor_setting:
-    construct_user = load_object(constructor_setting)
-else:
-    construct_user = default_construct_user
+def construct_user(user, client):
+    # load custom constructor if available
+    constructor_setting = getattr(settings, 'SIMPLE_SSO_USER_CONSTRUCTOR', None)
+    if constructor_setting:
+        return load_object(constructor_setting)(user, client)
+    else:
+        return default_construct_user(user, client)
 
 def get_user_json(user, client):
     """
