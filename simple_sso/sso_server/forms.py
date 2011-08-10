@@ -5,6 +5,9 @@ from simple_sso.sso_server.models import Token, Client
 
 
 class BaseForm(forms.Form):
+    """
+    Base Simple SSO form that verifies the key and signature.
+    """
     signature = forms.CharField(max_length=64, min_length=64)
     key = forms.CharField(max_length=64)
     
@@ -27,10 +30,15 @@ class BaseForm(forms.Form):
 
 
 class RequestTokenRequestForm(BaseForm):
-    pass
+    """
+    Form used to request a Request Token
+    """
 
 
 class AuthorizeForm(BaseForm):
+    """
+    Authorize form used to retrieve a Auth Token using a Request Token
+    """
     request_token = forms.CharField(max_length=64, min_length=64)
     
     def clean(self):
@@ -44,6 +52,9 @@ class AuthorizeForm(BaseForm):
 
 
 class VerificationForm(BaseForm):
+    """
+    Form used to verify a Auth Token
+    """
     auth_token = forms.CharField(max_length=64, min_length=64)
     
     def clean(self):

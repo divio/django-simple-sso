@@ -4,6 +4,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import simplejson
 
 def load_json_user(json):
+    """
+    Given a JSON string, returns a Django User instance.
+    """
     simple_keys = [
         'username',
         'first_name',

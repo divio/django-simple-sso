@@ -35,7 +35,8 @@ Workflow
 ********
 
 
-#. User wants to log into a **Client** by clicking a "Login" button.
+#. User wants to log into a **Client** by clicking a "Login" button. The
+   initially requested URL can be passed using the ``next`` GET parameter.
 #. The **Client**'s Python code does a HTTP request to the **Server** to request a
    authentication token, this is called the **Request Token Request**.
 #. The **Server** returns a **Request Token**.

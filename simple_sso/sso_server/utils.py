@@ -4,7 +4,11 @@ from django.utils import simplejson
 from django_load.core import load_object
 
 
-def default_construct_user(user):
+def default_construct_user(user, client):
+    """
+    Default user constructor. Ignores the client and returns the Django User
+    as a dictionary with the fields required by the specifications.
+    """
     simple_keys = [
         'username',
         'first_name',
@@ -24,12 +28,16 @@ def default_construct_user(user):
         })
     return data
 
+# load custom constructor if available
 constructor_setting = getattr(settings, 'SIMPLE_SSO_USER_CONSTRUCTOR', None)
 if constructor_setting:
     construct_user = load_object(constructor_setting)
 else:
     construct_user = default_construct_user
 
-def get_user_json(user):
-    data = construct_user(user)
+def get_user_json(user, client):
+    """
+    Returns the JSON string representation of the user object for a client.
+    """
+    data = construct_user(user, client)
     return simplejson.dumps(data)

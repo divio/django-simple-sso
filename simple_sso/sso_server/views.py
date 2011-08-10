@@ -48,7 +48,7 @@ def verify(request):
     form = VerificationForm(request.GET)
     if form.is_valid():
         token = form.cleaned_data['auth_token']
-        user = get_user_json(token.user)
+        user = get_user_json(token.user, token.client)
         params = [('user', user)]
         signature = build_signature(params)
         params.append(('signature', signature))
