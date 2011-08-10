@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.core.urlresolvers import reverse
 from django.http import (HttpResponse, HttpResponseForbidden, 
     HttpResponseBadRequest, HttpResponseRedirect)
 from simple_sso.signatures import build_signature
@@ -37,8 +38,8 @@ def authorize(request):
             token.save()
             return HttpResponseRedirect('%s?%s' % (url, urllib.urlencode(params)))
         else:
-            # TODO: Promt login
-            pass
+            params = urllib.urlencode([('next', '%s?%s' % (request.path, urllib.urlencode(request.GET)))])
+            return HttpResponseRedirect('%s?%s' % (reverse('django.contrib.auth.views.login'), params))
     else:
         if form.invalid_signature:
             return HttpResponseForbidden()
