@@ -6,7 +6,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.test.client import Client as TestClient
 from django.test.testcases import TestCase
 from simple_sso.sso_server.models import Client, Token
-from simple_sso.test_utils.context_managers import SettingsOverride
+from simple_sso.test_utils.context_managers import (SettingsOverride, 
+    UserLoginContext)
 from simple_sso.utils import SIMPLE_KEYS
 import urlparse
 
@@ -27,6 +28,8 @@ class SimpleSSOTests(TestCase):
             # verify theres no tokens yet
             self.assertEqual(Token.objects.count(), 0)
             response = self.client.get(reverse('simple-sso-login'))
+            # there should be a token now
+            self.assertEqual(Token.objects.count(), 1)
             # this should be a HttpResponseRedirect
             self.assertEqual(response.status_code, HttpResponseRedirect.status_code)
             # check that it's the URL we expect
@@ -74,4 +77,21 @@ class SimpleSSOTests(TestCase):
             self.assertEqual(client_user.password, '!')
             self.assertNotEqual(server_user.password, '!')
             for key in SIMPLE_KEYS:
-                self.assertEqual(getattr(client_user, key), getattr(server_user, key))  
+                self.assertEqual(getattr(client_user, key), getattr(server_user, key))
+    
+    def test_user_already_logged_in(self):
+        # create a user and a client
+        USERNAME = PASSWORD = 'myuser'
+        server_user = User.objects.create_user(USERNAME, 'my@user.com', PASSWORD)
+        client = Client.objects.create(root_url='/client/')
+        with SettingsOverride(SIMPLE_SSO_KEY=client.key, SIMPLE_SSO_SECRET=client.secret):
+            with UserLoginContext(self, server_user):
+                # try logging in and auto-follow all 302s
+                self.client.get(reverse('simple-sso-login'), follow=True)
+                # check the user
+                client_user = get_user(self.client)
+                self.assertEqual(client_user.password, '!')
+                self.assertNotEqual(server_user.password, '!')
+                for key in SIMPLE_KEYS:
+                    self.assertEqual(getattr(client_user, key), getattr(server_user, key))
+                    
