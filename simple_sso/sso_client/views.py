@@ -20,7 +20,7 @@ def get_request_token():
     signature = build_signature(params, settings.SIMPLE_SSO_SECRET)
     params.append(('signature', signature))
     url = urljoin(settings.SIMPLE_SSO_SERVER, 'request-token') + '/'
-    response = requests.get(url, dict(params))
+    response = requests.get(url, params=dict(params))
     if response.status_code != 200:
         return False
     data = QueryDict(response.content)
@@ -47,7 +47,7 @@ def verify_auth_token(data):
     signature = build_signature(params, settings.SIMPLE_SSO_SECRET)
     params.append(('signature', signature))
     url = urljoin(settings.SIMPLE_SSO_SERVER, 'verify') + '/'
-    response = requests.get(url, dict(params))
+    response = requests.get(url, params=dict(params))
     if response.status_code != 200:
         return False
     data = QueryDict(response.content)

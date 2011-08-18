@@ -18,6 +18,7 @@ class SimpleSSOTests(TestCase):
             testclient = TestClient()
             return testclient.get(url, params)
         requests.get = get
+        self.client.logout()
     
     def test_walkthrough(self):
         # create a user and a client
