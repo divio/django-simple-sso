@@ -5,10 +5,12 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.test.client import Client as TestClient
 from django.test.testcases import TestCase
+from django.utils import simplejson
+from simple_sso.sso_client.utils import load_json_user
 from simple_sso.sso_server.models import Client, Token
 from simple_sso.test_utils.context_managers import (SettingsOverride, 
     UserLoginContext)
-from simple_sso.utils import SIMPLE_KEYS
+from simple_sso.utils import SIMPLE_KEYS, gen_secret_key
 import urlparse
 
 class SimpleSSOTests(TestCase):
@@ -95,4 +97,27 @@ class SimpleSSOTests(TestCase):
                 self.assertNotEqual(server_user.password, '!')
                 for key in SIMPLE_KEYS:
                     self.assertEqual(getattr(client_user, key), getattr(server_user, key))
-                    
+    
+    def test_custom_keygen(self):
+        # WARNING: The following test uses a key generator function that is
+        # highly insecure and should never under any circumstances be used in
+        # a production enivornment
+        with SettingsOverride(SIMPLE_SSO_KEYGENERATOR=lambda length: 'test'):
+            self.assertEqual(gen_secret_key(40), 'test')
+            
+    def test_load_json_user(self):
+        userdata = {
+            'username': 'mytestuser',
+            'password': 'testpassword',
+            'first_name': 'mytestuser',
+            'last_name': 'mytestuser',
+            'email': 'mytestuser@example.com',
+            'is_staff': True,
+            'is_superuser': False,
+            'permissions': []
+        }
+        jsondata = simplejson.dumps(userdata)
+        user = load_json_user(jsondata)
+        for key in SIMPLE_KEYS:
+            self.assertEqual(getattr(user, key), userdata[key])
+        self.assertFalse(user.check_password('testpassword'))

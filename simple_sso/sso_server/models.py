@@ -41,6 +41,11 @@ class Client(models.Model):
     secret = models.CharField(max_length=64, unique=True, default=gen_client_key('secret'))
     key = models.CharField(max_length=64, unique=True, default=gen_client_key('key'))
     root_url = models.URLField(verify_exists=False)
+    
+    def rotate_keys(self):
+        self.secret = gen_client_key('secret')()
+        self.key = gen_client_key('key')()
+        self.save()
 
 
 class Token(models.Model):
