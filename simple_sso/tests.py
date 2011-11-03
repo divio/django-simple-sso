@@ -13,7 +13,11 @@ from simple_sso.test_utils.context_managers import (SettingsOverride,
 from simple_sso.utils import SIMPLE_KEYS, gen_secret_key
 import urlparse
 
+
+
 class SimpleSSOTests(TestCase):
+    urls = 'simple_sso.test_urls'
+
     def setUp(self):
         import requests
         def get(url, params={}, headers={}, cookies=None, auth=None, **kwargs):

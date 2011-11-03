@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-from django.conf.urls.defaults import patterns, url, include
-from django.http import HttpResponse
 import sys
 
-urlpatterns = patterns('',
-    url('^server/', include('simple_sso.sso_server.urls')),
-    url('^client/', include('simple_sso.sso_client.urls')),
-    url(r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
-    url('^$', lambda request: HttpResponse('home'), name='root')
-)
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -27,7 +19,7 @@ DATABASES = {
     }
 }
 
-ROOT_URLCONF = 'runtests'
+ROOT_URLCONF = 'simple_sso.test_urls'
 
 def run_tests():
     from django.conf import settings
