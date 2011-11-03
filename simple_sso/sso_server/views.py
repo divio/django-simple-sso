@@ -6,7 +6,7 @@ from simple_sso.signatures import build_signature
 from simple_sso.sso_server.forms import (RequestTokenRequestForm, AuthorizeForm, 
     VerificationForm)
 from simple_sso.sso_server.models import Token
-from simple_sso.sso_server.utils import get_user_json
+from simple_sso.sso_server.utils import get_user_json, access_control
 from urlparse import urljoin
 import urllib
 
@@ -30,13 +30,16 @@ def authorize(request):
     if form.is_valid():
         token = form.cleaned_data['token']
         if request.user.is_authenticated():
-            url = urljoin(token.client.root_url, 'authenticate') + '/'
-            params = [('request_token', token.request_token), ('auth_token', token.auth_token)]
-            signature = build_signature(params, token.client.secret)
-            params.append(('signature', signature))
-            token.user = request.user
-            token.save()
-            return HttpResponseRedirect('%s?%s' % (url, urllib.urlencode(params)))
+            if access_control(request.user, token.client):
+                url = urljoin(token.client.root_url, 'authenticate') + '/'
+                params = [('request_token', token.request_token), ('auth_token', token.auth_token)]
+                signature = build_signature(params, token.client.secret)
+                params.append(('signature', signature))
+                token.user = request.user
+                token.save()
+                return HttpResponseRedirect('%s?%s' % (url, urllib.urlencode(params)))
+            else:
+                return HttpResponseForbidden()
         else:
             params = urllib.urlencode([('next', '%s?%s' % (request.path, urllib.urlencode(request.GET)))])
             return HttpResponseRedirect('%s?%s' % (reverse('django.contrib.auth.views.login'), params))

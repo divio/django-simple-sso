@@ -35,3 +35,9 @@ def get_user_json(user, client):
     """
     data = construct_user(user, client)
     return simplejson.dumps(data)
+
+def access_control(user, client):
+    controller = getattr(settings, 'SIMPLE_SSO_ACCESS_CONTROLLER', None)
+    if controller:
+        return controller(user, client)
+    return True
