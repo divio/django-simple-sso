@@ -12,7 +12,7 @@ class BaseForm(forms.Form):
     key = forms.CharField(max_length=64)
     
     def __init__(self, *args, **kwargs):
-        self.invalid_signature = True
+        self.invalid_signature = False
         self.client = None
         return super(BaseForm, self).__init__(*args, **kwargs)
     
@@ -20,12 +20,15 @@ class BaseForm(forms.Form):
         data = super(BaseForm, self).clean()
         parameters = [(key, value) for key, value in data.items() if key != 'signature']
         client_key = data['key']
-        self.client = Client.objects.get(key=client_key)
+        try:
+            self.client = Client.objects.get(key=client_key)
+        except Client.DoesNotExist:
+            raise forms.ValidationError('Invalid client key')
         secret = self.client.secret
         signature = data['signature']
         if not verify_signature(parameters, signature, secret):
+            self.invalid_signature = True
             raise forms.ValidationError('Invalid signature')
-        self.invalid_signature = False
         return data
 
 
