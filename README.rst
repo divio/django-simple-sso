@@ -179,10 +179,9 @@ On the server
 =============
 
 * Add ``simple_sso.sso_server`` to ``INSTALLED_APPS``.
-* Include the ``simple_sso.sso_server.urls`` url patterns somewhere.
-* Optionally provide the ``SIMPLE_SSO_USER_CONSTRUCTOR`` setting which points
-  to a callable which, given a Django user instance, returns a dictionary
-  representation containing the information as described in **The User object**.
+* Create an instance (potentially of a subclass) of
+  ``simple_sso.server.SimpleSSOServer`` and include the return value of the 
+  ``get_urls`` method on that instance into your url patterns.
 
 
 On the client

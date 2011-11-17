@@ -19,4 +19,10 @@ def verify_signature(parameters, signature, secret):
     
     Parameters is a list of tuples.
     """
-    return build_signature(parameters, secret) == signature
+    result = 0
+    built_signature = build_signature(parameters, secret)
+    if len(signature) != len(built_signature):
+        return False
+    for x, y in zip(built_signature, signature):
+        result |= ord(x) ^ ord(y)
+    return result == 0
