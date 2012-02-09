@@ -24,13 +24,13 @@ def load_json_user(json):
     permissions = []
     
     for perm in data['permissions']:
-        ctype = ctype_cache.get(perm['content_type'], None)
+        ctype = ctype_cache.get(perm['codename'], None)
         if not ctype:
             try:
-                ctype = ContentType.objects.get_by_natural_key(perm['content_type'])
+                ctype = ContentType.objects.get_by_natural_key(perm['content_type'][0], perm['content_type'][1])
             except ContentType.DoesNotExist:
                 continue
-            ctype_cache[perm['content_type']] = ctype
+            ctype_cache[perm['codename']] = ctype
         try:
             permission = Permission.objects.get(content_type=ctype, codename=perm['codename'])
         except Permission.DoesNotExist:
