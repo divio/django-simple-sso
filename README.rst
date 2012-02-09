@@ -182,7 +182,14 @@ On the server
 * Create an instance (potentially of a subclass) of
   ``simple_sso.server.SimpleSSOServer`` and include the return value of the 
   ``get_urls`` method on that instance into your url patterns.
+  Example::
+    from simple_sso.server import SimpleSSOServer
 
+    sso_server = SimpleSSOServer()
+
+    urlpatterns = patterns('',
+        url(r'^auth/', include(sso_server.get_urls())),
+    )
 
 On the client
 =============
@@ -190,8 +197,13 @@ On the client
 * Create a new instance of ``simple_sso.sso_server.models.Client`` on the
   **Server**.
 * Add the ``SIMPLE_SSO_SECRET`` and ``SIMPLE_SSO_KEY`` settings as provided by
-  the **Server**'s ``simple_sso.sso_server.models.Client`` model.
+  the **Server**'s ``simple_sso.sso_server.models.Client`` model. This can be 
+  found when creating a "Client" object in the **Server** administration.
 * Add the ``SIMPLE_SSO_SERVER`` setting which is the absolute URL pointing to
   the root where the ``simple_sso.sso_server.urls`` where include on the
   **Server**.
 * Add the ``simple_sso.sso_client.urls`` patterns somewhere on the client.
+  Example::
+    urlpatterns = patterns('',
+        url(r'^auth/', include('simple_sso.sso_client.urls')
+    )
