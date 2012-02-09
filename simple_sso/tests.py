@@ -130,6 +130,27 @@ class SimpleSSOTests(TestCase):
         for key in SIMPLE_KEYS:
             self.assertEqual(getattr(user, key), userdata[key])
         self.assertFalse(user.check_password('testpassword'))
+
+    def test_load_json_user_with_permissions(self):
+        userdata = {
+            'username': 'mytestuser',
+            'password': 'testpassword',
+            'first_name': 'mytestuser',
+            'last_name': 'mytestuser',
+            'email': 'mytestuser@example.com',
+            'is_staff': True,
+            'is_superuser': False,
+            'permissions': [
+                {'codename': 'add_logentry', 'content_type': ['admin', 'logentry']}, 
+                {'codename': 'change_logentry', 'content_type': ['admin', 'logentry']}, 
+                {'codename': 'delete_logentry', 'content_type': ['admin', 'logentry']}
+            ]
+        }
+        jsondata = simplejson.dumps(userdata)
+        user = load_json_user(jsondata)
+        for key in SIMPLE_KEYS:
+            self.assertEqual(getattr(user, key), userdata[key])
+        self.assertFalse(user.check_password('testpassword'))
     
     def test_request_token_view_invalid_signature(self):
         client = Client.objects.create(root_url='/client/')
