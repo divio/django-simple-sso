@@ -28,7 +28,9 @@ def run_tests():
         ROOT_URLCONF = ROOT_URLCONF,
         DATABASES = DATABASES,
         TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner',
-        SIMPLE_SSO_SERVER = '/server/',
+        SSO_PRIVATE_KEY = 'private',
+        SSO_PUBLIC_KEY = 'public',
+        SSO_SERVER = 'http://localhost/server/',
     )
 
     # Run the test suite, including the extra validation tests.
