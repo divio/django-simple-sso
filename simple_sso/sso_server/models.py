@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.db import models
 from simple_sso.utils import gen_secret_key
 import datetime
@@ -47,7 +48,7 @@ class Token(models.Model):
     access_token = models.CharField(unique=True, max_length=64, default=gen_token_field('access_token'))
     timestamp = models.DateTimeField(default=datetime.datetime.now)
     redirect_to = models.CharField(max_length=255)
-    user = models.ForeignKey('auth.User', null=True)
+    user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), null=True)
 
     def refresh(self):
         self.timestamp = datetime.datetime.now()
