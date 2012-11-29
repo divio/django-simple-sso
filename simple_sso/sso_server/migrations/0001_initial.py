@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from django.conf import settings
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -25,7 +26,7 @@ class Migration(SchemaMigration):
             ('access_token', self.gf('django.db.models.fields.CharField')(default='6iOTXc4LLS3fPIJl8wXmfsYPMm6wuwsvUQf7UTVnMX6TeFBpIM4apGOdKiHz8qUt', unique=True, max_length=64)),
             ('timestamp', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('redirect_to', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm[getattr(settings, 'AUTH_USER_MODEL', 'auth.User')], null=True)),
         ))
         db.send_create_signal('sso_server', ['Token'])
 
