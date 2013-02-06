@@ -6,6 +6,7 @@ from django.contrib.admin.options import ModelAdmin
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict)
 from django.views.generic.base import View
+from django.utils import timezone
 from itsdangerous import URLSafeTimedSerializer
 from simple_sso.sso_server.models import Token, Consumer
 import datetime
@@ -73,7 +74,7 @@ class AuthorizeView(View):
         return HttpResponseForbidden('Token timed out')
 
     def check_token_timeout(self):
-        delta = datetime.datetime.now() - self.token.timestamp
+        delta = timezone.now() - self.token.timestamp
         if delta > self.server.token_timeout:
             self.token.delete()
             return False
