@@ -165,10 +165,7 @@ The user object contains must contain at least the following data:
   be empty.
 * ``is_staff``: Can this user access the Django admin on the **Client**?
 * ``is_superuser``: Does this user have superuser access to the **Client**?
-* ``permissions``: A list of dictionaries with following keys:
-    * ``content_type``: The natural key of the content type this permission
-      points to.
-    * ``codename``: The codename of this permission.
+* ``is_active``: Is the user active?
 
 
 **************
