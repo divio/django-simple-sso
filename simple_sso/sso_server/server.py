@@ -153,6 +153,7 @@ class Server(object):
             'last_name': user.last_name,
             'is_staff': False,
             'is_superuser': False,
+            'is_active': user.is_active,
         }
 
     def get_urls(self):
