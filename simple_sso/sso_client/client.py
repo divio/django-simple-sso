@@ -61,12 +61,16 @@ class Client(object):
     login_view = LoginView
     authenticate_view = AuthenticateView
     backend = "%s.%s" % (ModelBackend.__module__, ModelBackend.__name__)
+    user_extra_data = None
 
-    def __init__(self, server_url, public_key, private_key):
+    def __init__(self, server_url, public_key, private_key,
+                 user_extra_data=None):
         self.server_url = server_url
         self.public_key = public_key
         self.private_key = private_key
         self.consumer = SyncConsumer(self.server_url, self.public_key, self.private_key)
+        if user_extra_data:
+            self.user_extra_data = user_extra_data
 
     @classmethod
     def from_dsn(cls, dsn):
@@ -83,7 +87,10 @@ class Client(object):
         return self.consumer.consume('/request-token/', {'redirect_to': redirect_to})['request_token']
 
     def get_user(self, access_token):
-        user_data = self.consumer.consume('/verify/', {'access_token': access_token})
+        data = {'access_token': access_token}
+        if self.user_extra_data:
+            data['extra_data'] = self.user_extra_data
+        user_data = self.consumer.consume('/verify/', data)
         user = self.build_user(user_data)
         return user
 
