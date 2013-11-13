@@ -116,7 +116,9 @@ class VerificationProvider(BaseProvider, AuthorizeView):
             return self.token_timeout()
         if not self.token.user:
             return self.token_not_bound()
-        return self.server.get_user_data(self.token.user, self.consumer)
+        extra_data = data.get('extra_data', None)
+        return self.server.get_user_data(
+            self.token.user, self.consumer, extra_data=extra_data)
 
     def token_not_bound(self):
         return HttpResponseForbidden("Invalid token")
@@ -145,8 +147,11 @@ class Server(object):
     def has_access(self, user, consumer):
         return True
 
-    def get_user_data(self, user, consumer):
-        return {
+    def get_user_extra_data(self, user, consumer, extra_data):
+        raise NotImplementedError()
+
+    def get_user_data(self, user, consumer, extra_data=None):
+        user_data = {
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
@@ -155,6 +160,10 @@ class Server(object):
             'is_superuser': False,
             'is_active': user.is_active,
         }
+        if extra_data:
+            user_data['extra_data'] = self.get_user_extra_data(
+                user, consumer, extra_data)
+        return user_data
 
     def get_urls(self):
         return patterns('',
@@ -162,4 +171,3 @@ class Server(object):
             url(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
             url(r'^verify/$', provider_for_django(self.verification_provider(server=self)), name='simple-sso-verify'),
         )
-
