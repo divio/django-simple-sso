@@ -8,17 +8,17 @@ from django.utils.deconstruct import deconstructible
 from ..utils import gen_secret_key
 
 
-@deconstructible
 class SecretKeyGenerator(object):
     """
     Helper to give default values to Client.secret and Client.key
     """
+
     def __init__(self, field):
         self.field = field
 
-    def __call__(self, instance):
+    def __call__(self):
         key = gen_secret_key(64)
-        while instance._meta.model.objects.filter(**{self.field: key}).exists():
+        while self.get_model().objects.filter(**{self.field: key}).exists():
             key = gen_secret_key(64)
         return key
 
@@ -26,27 +26,54 @@ class SecretKeyGenerator(object):
         return self.field == other.field
 
 
+@deconstructible
+class ConsumerSecretKeyGenerator(SecretKeyGenerator):
+    def get_model(self):
+        return Consumer
+
+
+@deconstructible
+class TokenSecretKeyGenerator(SecretKeyGenerator):
+    def get_model(self):
+        return Token
+
+
 class Consumer(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    private_key = models.CharField(max_length=64, unique=True, default=SecretKeyGenerator('private_key'))
-    public_key = models.CharField(max_length=64, unique=True, default=SecretKeyGenerator('public_key'))
+    private_key = models.CharField(
+        max_length=64, unique=True,
+        default=ConsumerSecretKeyGenerator('private_key')
+    )
+    public_key = models.CharField(
+        max_length=64, unique=True,
+        default=ConsumerSecretKeyGenerator('public_key')
+    )
 
     def __unicode__(self):
         return self.name
 
     def rotate_keys(self):
-        self.secret = SecretKeyGenerator('private_key')()
-        self.key = SecretKeyGenerator('public_key')()
+        self.secret = ConsumerSecretKeyGenerator('private_key')()
+        self.key = ConsumerSecretKeyGenerator('public_key')()
         self.save()
 
 
 class Token(models.Model):
     consumer = models.ForeignKey(Consumer, related_name='tokens')
-    request_token = models.CharField(unique=True, max_length=64, default=SecretKeyGenerator('request_token'))
-    access_token = models.CharField(unique=True, max_length=64, default=SecretKeyGenerator('access_token'))
+    request_token = models.CharField(
+        unique=True, max_length=64,
+        default=TokenSecretKeyGenerator('request_token')
+    )
+    access_token = models.CharField(
+        unique=True, max_length=64,
+        default=TokenSecretKeyGenerator('access_token')
+    )
     timestamp = models.DateTimeField(default=datetime.datetime.now)
     redirect_to = models.CharField(max_length=255)
-    user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), null=True)
+    user = models.ForeignKey(
+        getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
+        null=True
+    )
 
     def refresh(self):
         self.timestamp = datetime.datetime.now()
