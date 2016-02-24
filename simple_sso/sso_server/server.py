@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict)
+from django.utils import timezone
 from django.views.generic.base import View
 from itsdangerous import URLSafeTimedSerializer
 from simple_sso.sso_server.models import Token, Consumer
@@ -39,10 +40,10 @@ class AuthorizeView(View):
     """
     The client get's redirected to this view with the `request_token` obtained
     by the Request Token Request by the client application beforehand.
-    
+
     This view checks if the user is logged in on the server application and if
     that user has the necessary rights.
-    
+
     If the user is not logged in, the user is prompted to log in.
     """
     server = None
@@ -73,7 +74,7 @@ class AuthorizeView(View):
         return HttpResponseForbidden('Token timed out')
 
     def check_token_timeout(self):
-        delta = datetime.datetime.now() - self.token.timestamp
+        delta = timezone.now() - self.token.timestamp
         if delta > self.server.token_timeout:
             self.token.delete()
             return False

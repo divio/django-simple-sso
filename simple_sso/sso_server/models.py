@@ -8,6 +8,7 @@ from django.utils.deconstruct import deconstructible
 from ..utils import gen_secret_key
 
 
+@deconstructible
 class SecretKeyGenerator(object):
     """
     Helper to give default values to Client.secret and Client.key
@@ -22,17 +23,12 @@ class SecretKeyGenerator(object):
             key = gen_secret_key(64)
         return key
 
-    def __eq__(self, other):
-        return self.field == other.field
 
-
-@deconstructible
 class ConsumerSecretKeyGenerator(SecretKeyGenerator):
     def get_model(self):
         return Consumer
 
 
-@deconstructible
 class TokenSecretKeyGenerator(SecretKeyGenerator):
     def get_model(self):
         return Token
