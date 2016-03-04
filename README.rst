@@ -15,7 +15,7 @@ authenticates users.
 Client
 ======
 
-The server is a Django website that provides login via SSO using the **Server**.
+The client is a Django website that provides login via SSO using the **Server**.
 It does not hold any user information.
 
 Key
