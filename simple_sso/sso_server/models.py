@@ -3,6 +3,7 @@ import datetime
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 
 from ..utils import gen_secret_key
