@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import datetime
+from django.utils import timezone
 from django.conf import settings
 import simple_sso.sso_server.models
 
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('request_token', models.CharField(default=simple_sso.sso_server.models.TokenSecretKeyGenerator(b'request_token'), unique=True, max_length=64)),
                 ('access_token', models.CharField(default=simple_sso.sso_server.models.TokenSecretKeyGenerator(b'access_token'), unique=True, max_length=64)),
-                ('timestamp', models.DateTimeField(default=datetime.datetime.now)),
+                ('timestamp', models.DateTimeField(default=timezone.now)),
                 ('redirect_to', models.CharField(max_length=255)),
                 ('consumer', models.ForeignKey(related_name='tokens', to='sso_server.Consumer')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),

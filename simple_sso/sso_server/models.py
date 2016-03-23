@@ -64,7 +64,7 @@ class Token(models.Model):
         unique=True, max_length=64,
         default=TokenSecretKeyGenerator('access_token')
     )
-    timestamp = models.DateTimeField(default=datetime.datetime.now)
+    timestamp = models.DateTimeField(default=timezone.now)
     redirect_to = models.CharField(max_length=255)
     user = models.ForeignKey(
         getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
@@ -72,5 +72,5 @@ class Token(models.Model):
     )
 
     def refresh(self):
-        self.timestamp = datetime.datetime.now()
+        self.timestamp = timezone.now()
         self.save()
