@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import urllib
-import urlparse
 from django.conf.urls import patterns, url
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
@@ -11,6 +9,16 @@ from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
 
+try:
+    # python 3
+    # noinspection PyCompatibility
+    from urllib.parse import urlparse, urlunparse, urljoin, urlencode
+except ImportError:
+    # python 2
+    # noinspection PyCompatibility
+    from urlparse import urlparse, urlunparse, urljoin
+    from urllib import urlencode
+
 
 class LoginView(View):
     client = None
@@ -18,13 +26,13 @@ class LoginView(View):
     def get(self, request):
         next = self.get_next()
         scheme = 'https' if request.is_secure() else 'http'
-        query = urllib.urlencode([('next', next)])
+        query = urlencode([('next', next)])
         netloc = request.get_host()
         path = reverse('simple-sso-authenticate')
-        redirect_to = urlparse.urlunparse((scheme, netloc, path, '', query, ''))
+        redirect_to = urlunparse((scheme, netloc, path, '', query, ''))
         request_token = self.client.get_request_token(redirect_to)
-        host = urlparse.urljoin(self.client.server_url, 'authorize/')
-        url = '%s?%s' % (host, urllib.urlencode([('token', request_token)]))
+        host = urljoin(self.client.server_url, 'authorize/')
+        url = '%s?%s' % (host, urlencode([('token', request_token)]))
         return HttpResponseRedirect(url)
 
     def get_next(self):
@@ -35,7 +43,7 @@ class LoginView(View):
         next = self.request.GET.get('next', None)
         if not next:
             return '/'
-        netloc = urlparse.urlparse(next)[1]
+        netloc = urlparse(next)[1]
         # Heavier security check -- don't allow redirection to a different
         # host.
         # Taken from django.contrib.auth.views.login
@@ -74,13 +82,13 @@ class Client(object):
 
     @classmethod
     def from_dsn(cls, dsn):
-        parse_result = urlparse.urlparse(dsn)
+        parse_result = urlparse(dsn)
         public_key = parse_result.username
         private_key = parse_result.password
         netloc = parse_result.hostname
         if parse_result.port:
             netloc += ':%s' % parse_result.port
-        server_url = urlparse.urlunparse((parse_result.scheme, netloc, parse_result.path, parse_result.params, parse_result.query, parse_result.fragment))
+        server_url = urlunparse((parse_result.scheme, netloc, parse_result.path, parse_result.params, parse_result.query, parse_result.fragment))
         return cls(server_url, public_key, private_key)
 
     def get_request_token(self, redirect_to):

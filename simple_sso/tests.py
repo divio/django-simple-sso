@@ -11,8 +11,15 @@ from simple_sso.test_urls import test_client
 from simple_sso.test_utils.context_managers import (SettingsOverride, 
     UserLoginContext)
 from simple_sso.utils import gen_secret_key
-import urlparse
 from webservices.sync import DjangoTestingConsumer
+
+try:
+    # noinspection PyCompatibility
+    from urllib.parse import urlparse
+except ImportError:
+    # python 2
+    # noinspection PyCompatibility
+    from urlparse import urlparse
 
 
 class SimpleSSOTests(TestCase):
@@ -42,7 +49,7 @@ class SimpleSSOTests(TestCase):
         # this should be a HttpResponseRedirect
         self.assertEqual(response.status_code, HttpResponseRedirect.status_code)
         # check that it's the URL we expect
-        url = urlparse.urlparse(response['Location'])
+        url = urlparse(response['Location'])
         path = url.path
         self.assertEqual(path, reverse('simple-sso-authorize'))
         # follow that redirect
@@ -50,7 +57,7 @@ class SimpleSSOTests(TestCase):
         # now we should have another redirect to the login
         self.assertEqual(response.status_code, HttpResponseRedirect.status_code, response.content)
         # check that the URL is correct
-        url = urlparse.urlparse(response['Location'])
+        url = urlparse(response['Location'])
         path = url.path
         self.assertEqual(path, reverse('django.contrib.auth.views.login'))
         # follow that redirect
@@ -63,7 +70,7 @@ class SimpleSSOTests(TestCase):
         # now we should have a redirect back to the authorize view
         self.assertEqual(response.status_code, HttpResponseRedirect.status_code)
         # check that it's the URL we expect
-        url = urlparse.urlparse(response['Location'])
+        url = urlparse(response['Location'])
         path = url.path
         self.assertEqual(path, reverse('simple-sso-authorize'))
         # follow that redirect
@@ -71,13 +78,13 @@ class SimpleSSOTests(TestCase):
         # this should again be a redirect
         self.assertEqual(response.status_code, HttpResponseRedirect.status_code)
         # this time back to the client app, confirm that!
-        url = urlparse.urlparse(response['Location'])
+        url = urlparse(response['Location'])
         path = url.path
         self.assertEqual(path, reverse('simple-sso-authenticate'))
         # follow it again
         response = client.get(response['Location'])
         # again a redirect! This time to /
-        url = urlparse.urlparse(response['Location'])
+        url = urlparse(response['Location'])
         path = url.path
         self.assertEqual(path, reverse('root'))
         # if we follow to root now, we should be logged in

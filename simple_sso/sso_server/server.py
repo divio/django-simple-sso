@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import urlparse
 from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
@@ -13,6 +12,15 @@ import datetime
 import urllib
 from webservices.models import Provider
 from webservices.sync import provider_for_django
+
+try:
+    # python 3
+    # noinspection PyCompatibility
+    from urllib.parse import urlparse, urlunparse
+except ImportError:
+    # python 2
+    # noinspection PyCompatibility
+    from urlparse import urlparse, urlunparse
 
 
 class BaseProvider(Provider):
@@ -99,10 +107,10 @@ class AuthorizeView(View):
         self.token.user = self.request.user
         self.token.save()
         serializer = URLSafeTimedSerializer(self.token.consumer.private_key)
-        parse_result = urlparse.urlparse(self.token.redirect_to)
+        parse_result = urlparse(self.token.redirect_to)
         query_dict = QueryDict(parse_result.query, mutable=True)
         query_dict['access_token'] = serializer.dumps(self.token.access_token)
-        url = urlparse.urlunparse((parse_result.scheme, parse_result.netloc, parse_result.path, '', query_dict.urlencode(), ''))
+        url = urlunparse((parse_result.scheme, parse_result.netloc, parse_result.path, '', query_dict.urlencode(), ''))
         return HttpResponseRedirect(url)
 
 
