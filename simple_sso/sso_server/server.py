@@ -160,15 +160,9 @@ class Server(object):
         raise NotImplementedError()
 
     def get_user_data(self, user, consumer, extra_data=None):
-        user_data = {
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_staff': False,
-            'is_superuser': False,
-            'is_active': user.is_active,
-        }
+        user_data = user.__dict__
+        for key in ['_password', '_state', 'password', 'date_joined', 'last_login']:
+            del user_data[key]
         if extra_data:
             user_data['extra_data'] = self.get_user_extra_data(
                 user, consumer, extra_data)

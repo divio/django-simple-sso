@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import patterns, url
-from django.contrib.auth import login
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
@@ -103,8 +102,10 @@ class Client(object):
         return user
 
     def build_user(self, user_data):
+        User = get_user_model()
+        query = {User.USERNAME_FIELD: user_data.get(User.USERNAME_FIELD)}
         try:
-            user = User.objects.get(username=user_data['username'])
+            user = User.objects.get(**query)
         except User.DoesNotExist:
             user = User(**user_data)
         user.set_unusable_password()
