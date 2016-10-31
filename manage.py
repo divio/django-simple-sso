@@ -1,9 +1,7 @@
 #!/usr/bin/python
-from django.conf.urls.defaults import patterns
 from django.core.management import execute_manager
 
-urlpatterns = patterns('',
-)
+urlpatterns = []
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
