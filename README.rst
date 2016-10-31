@@ -134,7 +134,7 @@ Auth Token Verification Request
 Security
 ********
 
-Ever request is signed using HMAC-SHA256. The signature is in the ``signature``
+Every request is signed using HMAC-SHA256. The signature is in the ``signature``
 parameter. The signature message is the urlencoded, alphabetically ordered
 query string. The signature key is the **Secret** of the **Client**. To verify
 the signature the ``key`` paramater holding the **key** of the **Client** is
