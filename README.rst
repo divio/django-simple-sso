@@ -177,14 +177,14 @@ On the server
 
 * Add ``simple_sso.sso_server`` to ``INSTALLED_APPS``.
 * Create an instance (potentially of a subclass) of
-  ``simple_sso.server.SimpleSSOServer`` and include the return value of the 
+  ``simple_sso.sso_server.server.Server`` and include the return value of the 
   ``get_urls`` method on that instance into your url patterns.
 
 
 On the client
 =============
 
-* Create a new instance of ``simple_sso.sso_server.models.Client`` on the
+* Create a new instance of ``simple_sso.sso_server.models.Consumer`` on the
   **Server**.
 * Add the ``SIMPLE_SSO_SECRET`` and ``SIMPLE_SSO_KEY`` settings as provided by
   the **Server**'s ``simple_sso.sso_server.models.Client`` model.
