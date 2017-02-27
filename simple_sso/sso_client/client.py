@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
@@ -112,7 +112,7 @@ class Client(object):
         return user
 
     def get_urls(self):
-        return patterns('',
+        return [
             url(r'^$', self.login_view.as_view(client=self), name='simple-sso-login'),
             url(r'^authenticate/$', self.authenticate_view.as_view(client=self), name='simple-sso-authenticate'),
-        )
+        ]
