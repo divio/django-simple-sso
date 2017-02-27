@@ -1,3 +1,11 @@
+django-simple-sso
+=================
+
+The latest version of this package supports:
+
+* Django >= 1.7
+
+
 #######################################
 Django Simple SSO Specification (DRAFT)
 #######################################

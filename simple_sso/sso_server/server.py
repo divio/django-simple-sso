@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.core.urlresolvers import reverse
@@ -175,8 +175,8 @@ class Server(object):
         return user_data
 
     def get_urls(self):
-        return patterns('',
+        return [
             url(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)), name='simple-sso-request-token'),
             url(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
             url(r'^verify/$', provider_for_django(self.verification_provider(server=self)), name='simple-sso-verify'),
-        )
+        ]
