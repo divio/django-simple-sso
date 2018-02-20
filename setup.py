@@ -23,18 +23,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         'itsdangerous',
+        'Django>=1.8,<2.0',
+        'webservices[django]',
     ],
-    extras_require = {
-        'server': [
-            'django',
-            'webservices[server]',
-            'south',
-        ],
-        'client': [
-            'requests',
-            'webservices[server]',
-        ],
-    },
     include_package_data=True,
     zip_safe=False,
 )
