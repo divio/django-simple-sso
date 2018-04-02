@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls.resolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
