@@ -54,7 +54,7 @@ class Consumer(models.Model):
 
 
 class Token(models.Model):
-    consumer = models.ForeignKey(Consumer, related_name='tokens')
+    consumer = models.ForeignKey(Consumer, related_name='tokens', on_delete=models.DO_NOTHING)
     request_token = models.CharField(
         unique=True, max_length=64,
         default=TokenSecretKeyGenerator('request_token')
@@ -67,7 +67,8 @@ class Token(models.Model):
     redirect_to = models.CharField(max_length=255)
     user = models.ForeignKey(
         getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
-        null=True
+        null=True,
+        on_delete=models.DO_NOTHING
     )
 
     def refresh(self):
