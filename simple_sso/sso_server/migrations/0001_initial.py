@@ -31,8 +31,8 @@ class Migration(migrations.Migration):
                 ('access_token', models.CharField(default=simple_sso.sso_server.models.TokenSecretKeyGenerator(b'access_token'), unique=True, max_length=64)),
                 ('timestamp', models.DateTimeField(default=timezone.now)),
                 ('redirect_to', models.CharField(max_length=255)),
-                ('consumer', models.ForeignKey(related_name='tokens', to='sso_server.Consumer')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),
+                ('consumer', models.ForeignKey(related_name='tokens', to='sso_server.Consumer', on_delete=models.DO_NOTHING)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, on_delete=models.DO_NOTHING)),
             ],
         ),
     ]
