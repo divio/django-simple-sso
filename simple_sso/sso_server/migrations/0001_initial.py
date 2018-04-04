@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                 ('timestamp', models.DateTimeField(default=timezone.now)),
                 ('redirect_to', models.CharField(max_length=255)),
                 ('consumer', models.ForeignKey(related_name='tokens', to='sso_server.Consumer', on_delete=models.CASCADE)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
         ),
     ]
