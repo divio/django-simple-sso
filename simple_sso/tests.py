@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.auth import get_user
-from django.contrib.auth.models import User
 from django.contrib.auth.hashers import is_password_usable
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.test.testcases import TestCase
 from simple_sso.sso_server.models import Token, Consumer
