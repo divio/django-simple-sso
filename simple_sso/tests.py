@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import is_password_usable
 from django.http import HttpResponseRedirect, HttpResponse
 from django.test.testcases import TestCase
 from simple_sso.sso_server.models import Token, Consumer
@@ -80,8 +81,8 @@ class SimpleSSOTests(TestCase):
         # if we follow to root now, we should be logged in
         response = self.client.get(response['Location'])
         client_user = get_user(self.client)
-        self.assertTrue(client_user.password.startswith('!'))
-        self.assertFalse(server_user.password.startswith('!'))
+        self.assertFalse(is_password_usable(client_user.password))
+        self.assertTrue(is_password_usable(server_user.password))
         for key in ['username', 'email', 'first_name', 'last_name']:
             self.assertEqual(getattr(client_user, key), getattr(server_user, key))
     
@@ -94,8 +95,8 @@ class SimpleSSOTests(TestCase):
             self.client.get(reverse('simple-sso-login'), follow=True)
             # check the user
             client_user = get_user(self.client)
-            self.assertTrue(client_user.password.startswith('!'))
-            self.assertFalse(server_user.password.startswith('!'))
+            self.assertFalse(is_password_usable(client_user.password))
+            self.assertTrue(is_password_usable(server_user.password))
             for key in ['username', 'email', 'first_name', 'last_name']:
                 self.assertEqual(getattr(client_user, key), getattr(server_user, key))
     
