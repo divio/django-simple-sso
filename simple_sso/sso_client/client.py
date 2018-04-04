@@ -3,21 +3,12 @@ from django.conf.urls import url
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
 
-try:
-    # python 3
-    # noinspection PyCompatibility
-    from urllib.parse import urlparse, urlunparse, urljoin, urlencode
-except ImportError:
-    # python 2
-    # noinspection PyCompatibility
-    from urlparse import urlparse, urlunparse, urljoin
-    from urllib import urlencode
+from ..compat import reverse, urlparse, urlunparse, urljoin, urlencode
 
 
 class LoginView(View):
@@ -92,13 +83,15 @@ class Client(object):
         return cls(server_url, public_key, private_key)
 
     def get_request_token(self, redirect_to):
-        return self.consumer.consume('/request-token/', {'redirect_to': redirect_to})['request_token']
+        url = reverse('simple-sso-request-token')
+        return self.consumer.consume(url, {'redirect_to': redirect_to})['request_token']
 
     def get_user(self, access_token):
         data = {'access_token': access_token}
         if self.user_extra_data:
             data['extra_data'] = self.user_extra_data
-        user_data = self.consumer.consume('/verify/', data)
+        url = reverse('simple-sso-verify')
+        user_data = self.consumer.consume(url, data)
         user = self.build_user(user_data)
         return user
 
