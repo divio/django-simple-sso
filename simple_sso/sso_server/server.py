@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
-from django.core.urlresolvers import reverse
 from django.http import (HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict)
 from django.utils import timezone
 from django.views.generic.base import View
 from itsdangerous import URLSafeTimedSerializer
 from simple_sso.sso_server.models import Token, Consumer
 import datetime
-import urllib
 from webservices.models import Provider
 from webservices.sync import provider_for_django
 
-try:
-    # python 3
-    # noinspection PyCompatibility
-    from urllib.parse import urlparse, urlunparse
-except ImportError:
-    # python 2
-    # noinspection PyCompatibility
-    from urlparse import urlparse, urlunparse
+from ..compat import reverse, urlparse, urlencode, urlunparse, user_is_authenticated
 
 
 class BaseProvider(Provider):
@@ -67,7 +60,7 @@ class AuthorizeView(View):
         if not self.check_token_timeout():
             return self.token_timeout()
         self.token.refresh()
-        if request.user.is_authenticated():
+        if user_is_authenticated(request.user):
             return self.handle_authenticated_user()
         else:
             return self.handle_unauthenticated_user()
@@ -96,8 +89,8 @@ class AuthorizeView(View):
             return self.access_denied()
 
     def handle_unauthenticated_user(self):
-        next = '%s?%s' % (self.request.path, urllib.urlencode([('token', self.token.request_token)]))
-        url = '%s?%s' % (reverse(self.server.auth_view_name), urllib.urlencode([('next', next)]))
+        next = '%s?%s' % (self.request.path, urlencode([('token', self.token.request_token)]))
+        url = '%s?%s' % (reverse(self.server.auth_view_name), urlencode([('next', next)]))
         return HttpResponseRedirect(url)
 
     def access_denied(self):
@@ -143,7 +136,7 @@ class Server(object):
     verification_provider = VerificationProvider
     token_timeout = datetime.timedelta(minutes=5)
     client_admin = ConsumerAdmin
-    auth_view_name = 'django.contrib.auth.views.login'
+    auth_view_name = 'login'
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():

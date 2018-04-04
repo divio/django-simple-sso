@@ -22,16 +22,36 @@ DATABASES = {
 ROOT_URLCONF = 'simple_sso.test_urls'
 
 def run_tests():
+    import django
     from django.conf import settings
     settings.configure(
-        INSTALLED_APPS = INSTALLED_APPS,
-        ROOT_URLCONF = ROOT_URLCONF,
-        DATABASES = DATABASES,
-        TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner',
-        SSO_PRIVATE_KEY = 'private',
-        SSO_PUBLIC_KEY = 'public',
-        SSO_SERVER = 'http://localhost/server/',
+        INSTALLED_APPS=INSTALLED_APPS,
+        ROOT_URLCONF=ROOT_URLCONF,
+        DATABASES=DATABASES,
+        SSO_PRIVATE_KEY='private',
+        SSO_PUBLIC_KEY='public',
+        SSO_SERVER='http://localhost/server/',
+        MIDDLEWARE=[
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+        ],
+        TEMPLATES=[{
+            'NAME': 'django',
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'OPTIONS': {
+                'debug': True,
+                'context_processors': [
+                    'django.contrib.auth.context_processors.auth',
+                    'django.template.context_processors.request',
+                ],
+                'loaders': (
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                )
+            }
+        }]
     )
+    django.setup()
 
     # Run the test suite, including the extra validation tests.
     from django.test.utils import get_runner
