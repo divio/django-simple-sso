@@ -22,7 +22,7 @@ setup(
     license='BSD',
     packages=find_packages(),
     install_requires=[
-        'itsdangerous',
+        'itsdangerous<1.0.0',
         'Django>=1.8,<2.1',
         'webservices[django]',
     ],
