@@ -23,7 +23,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'itsdangerous',
-        'Django>=1.8,<2.1',
+        'Django>=1.11',
         'webservices[django]',
     ],
     include_package_data=True,
