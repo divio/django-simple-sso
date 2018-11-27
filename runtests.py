@@ -21,6 +21,7 @@ DATABASES = {
 
 ROOT_URLCONF = 'simple_sso.test_urls'
 
+
 def run_tests():
     import django
     from django.conf import settings

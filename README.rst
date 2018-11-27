@@ -3,7 +3,7 @@ django-simple-sso
 
 The latest version of this package supports:
 
-* Django >= 1.7
+* Django >= 1.11
 
 
 #######################################
