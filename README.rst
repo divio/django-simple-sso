@@ -15,24 +15,24 @@ Terminology
 ***********
 
 Server
-======
+------
 
 The server is a Django website that holds all the user information and
 authenticates users.
 
 Client
-======
+------
 
 The client is a Django website that provides login via SSO using the **Server**.
 It does not hold any user information.
 
 Key
-===
+---
 
 A unique key identifying a **Client**. This key can be made public.
 
 Secret
-======
+------
 
 A secret key shared between the **Server** and a single **Client**. This secret
 should never be shared with anyone other than the **Server** and **Client** and
@@ -43,21 +43,21 @@ Workflow
 ********
 
 
-#. User wants to log into a **Client** by clicking a "Login" button. The
-   initially requested URL can be passed using the ``next`` GET parameter.
-#. The **Client**'s Python code does a HTTP request to the **Server** to request a
-   authentication token, this is called the **Request Token Request**.
-#. The **Server** returns a **Request Token**.
-#. The **Client** redirects the User to a view on the **Server** using the
-   **Request Token**, this is the **Authorization Request**.
-#. If the user is not logged in the the **Server**, they are prompted to log in.
-#. The user is redirected to the **Client** including the **Request Token** and a
-   **Auth Token**, this is the ``Authentication Request``.
-#. The **Client**'s Python code does a HTTP request to the **Server** to verify the
-   **Auth Token**, this is called the **Auth Token Verification Request**.
-#. If the **Auth Token** is valid, the **Server** returns a serialized Django User
-   object.
-#. The **Client** logs the user in using the Django User recieved from the **Server**.
+* User wants to log into a **Client** by clicking a "Login" button. The
+  initially requested URL can be passed using the ``next`` GET parameter.
+* The **Client**'s Python code does a HTTP request to the **Server** to request a
+  authentication token, this is called the **Request Token Request**.
+* The **Server** returns a **Request Token**.
+* The **Client** redirects the User to a view on the **Server** using the
+  **Request Token**, this is the **Authorization Request**.
+* If the user is not logged in the the **Server**, they are prompted to log in.
+* The user is redirected to the **Client** including the **Request Token** and a
+  **Auth Token**, this is the ``Authentication Request``.
+* The **Client**'s Python code does a HTTP request to the **Server** to verify the
+  **Auth Token**, this is called the **Auth Token Verification Request**.
+* If the **Auth Token** is valid, the **Server** returns a serialized Django User
+  object.
+* The **Client** logs the user in using the Django User recieved from the **Server**.
 
 
 ********
@@ -65,12 +65,12 @@ Requests
 ********
 
 General
-=======
+-------
 
 All requests have a ``signature`` and ``key`` parameter, see **Security**.
 
 Request Token Request
-=====================
+---------------------
 
 * Client: Python
 * Target: **Server**
@@ -86,7 +86,7 @@ Request Token Request
 
 
 Authorization Request
-=====================
+---------------------
 
 * Client: Browser (User)
 * Target: **Server**
@@ -103,7 +103,7 @@ Authorization Request
 
 
 Authentication Request
-======================
+----------------------
 
 * Client: Browser (User)
 * Target: **Client**
@@ -122,7 +122,7 @@ Authentication Request
 
 
 Auth Token Verification Request
-===============================
+-------------------------------
 
 * Client: Python
 * Target: **Server**
@@ -149,7 +149,7 @@ the signature the ``key`` paramater holding the **key** of the **Client** is
 also sent with every request from the **Client** to the **Server**.
 
 Example
-=======
+-------
 
 GET Request with the GET parameters ``key=bundle123`` and the private key
 ``secret key``: ``fbf6396d0fc40d563e2be3c861f7eb5a1b821b76c2ac943d40a7a63b288619a9``
@@ -181,7 +181,7 @@ Implementation
 **************
 
 On the server
-=============
+-------------
 
 * Add ``simple_sso.sso_server`` to ``INSTALLED_APPS``.
 * Create an instance (potentially of a subclass) of
@@ -190,7 +190,7 @@ On the server
 
 
 On the client
-=============
+-------------
 
 * Create a new instance of ``simple_sso.sso_server.models.Consumer`` on the
   **Server**.
