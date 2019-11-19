@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.contrib.auth import logout
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
@@ -130,11 +131,23 @@ class ConsumerAdmin(ModelAdmin):
     readonly_fields = ['public_key', 'private_key']
 
 
+class LogoutView(AuthorizeView):
+    server = None
+
+    def handle_authenticated_user(self):
+        parse_result = (urlparse(self.token.redirect_to))
+        query_dict = QueryDict(parse_result.query, mutable=True)
+        url = urlunparse((parse_result.scheme, parse_result.netloc, parse_result.path, '', query_dict.urlencode(), ''))
+        logout(self.request)
+        return HttpResponseRedirect(url)
+
+
 class Server(object):
     request_token_provider = RequestTokenProvider
     authorize_view = AuthorizeView
     verification_provider = VerificationProvider
     token_timeout = datetime.timedelta(minutes=5)
+    logout_view = LogoutView
     client_admin = ConsumerAdmin
     auth_view_name = 'login'
 
@@ -172,4 +185,5 @@ class Server(object):
             url(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)), name='simple-sso-request-token'),
             url(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
             url(r'^verify/$', provider_for_django(self.verification_provider(server=self)), name='simple-sso-verify'),
+            url(r'^logout/$', self.logout_view.as_view(server=self), name='simple-sso-serverlogout'),
         ]

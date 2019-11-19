@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
@@ -53,6 +53,38 @@ class LoginView(View):
         return next
 
 
+class LogoutView(View):
+    client = None
+
+    def get(self, request):
+        next = self.get_next()
+        scheme = 'https' if request.is_secure() else 'http'
+        query = urlencode([('next', next)])
+        netloc = request.get_host()
+        path = reverse('simple-sso-logoutauth')
+        redirect_to = urlunparse((scheme, netloc, path, '', query, ''))
+        request_token = self.client.get_request_token(redirect_to)
+        host = urljoin(self.client.server_url, 'logout/')
+        url = '%s?%s' % (host, urlencode([('token', request_token)]))
+        return HttpResponseRedirect(url)
+
+    def get_next(self):
+        """
+        Given a request, returns the URL where a user should be redirected to
+        after login. Defaults to '/'
+        """
+        next = self.request.GET.get('next', None)
+        if not next:
+            return '/'
+        netloc = urlparse(next)[1]
+        # Heavier security check -- don't allow redirection to a different
+        # host.
+        # Taken from django.contrib.auth.views.login
+        if netloc and netloc != self.request.get_host():
+            return '/'
+        return next
+
+
 class AuthenticateView(LoginView):
     client = None
 
@@ -66,9 +98,20 @@ class AuthenticateView(LoginView):
         return HttpResponseRedirect(next)
 
 
+class LogoutAuthView(LogoutView):
+    client = None
+
+    def get(self, request):
+        logout(request)
+        next = self.get_next()
+        return HttpResponseRedirect(next)
+
+
 class Client(object):
     login_view = LoginView
     authenticate_view = AuthenticateView
+    logout_auth_view = LogoutAuthView
+    logout_view = LogoutView
     backend = "%s.%s" % (ModelBackend.__module__, ModelBackend.__name__)
     user_extra_data = None
 
@@ -127,4 +170,6 @@ class Client(object):
         return [
             url(r'^$', self.login_view.as_view(client=self), name='simple-sso-login'),
             url(r'^authenticate/$', self.authenticate_view.as_view(client=self), name='simple-sso-authenticate'),
+            url(r'^logout/$', self.logout_view.as_view(client=self), name='simple-sso-logout'),
+            url(r'^authlogout/$', self.logout_auth_view.as_view(client=self), name='simple-sso-logoutauth'),
         ]
