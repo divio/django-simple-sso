@@ -119,7 +119,7 @@ class Client(object):
             user = User.objects.get(username=user_data['username'])
         except User.DoesNotExist:
             user = User(**user_data)
-        user.set_unusable_password()
+        # user.set_unusable_password()
         user.save()
         return user
 
