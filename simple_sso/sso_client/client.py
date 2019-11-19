@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
+from django.contrib.auth import get_user_model
 
 from ..compat import (
     NoReverseMatch,
@@ -16,6 +17,8 @@ from ..compat import (
     urljoin,
     urlencode,
 )
+
+User = get_user_model()
 
 
 class LoginView(View):
