@@ -149,7 +149,7 @@ class Server(object):
     token_timeout = datetime.timedelta(minutes=5)
     logout_view = LogoutView
     client_admin = ConsumerAdmin
-    auth_view_name = 'login'
+    auth_view_name = 'root'
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
