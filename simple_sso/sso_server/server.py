@@ -112,7 +112,8 @@ class VerificationProvider(BaseProvider, AuthorizeView):
     def provide(self, data):
         token = data['access_token']
         try:
-            self.token = Token.objects.select_related('user').get(access_token=token, consumer=self.consumer)
+            self.token = Token.objects.select_related('user').get(
+                access_token=token, consumer=self.consumer)
         except Token.DoesNotExist:
             return self.token_not_found()
         if not self.check_token_timeout():
@@ -137,9 +138,19 @@ class LogoutView(AuthorizeView):
     def handle_authenticated_user(self):
         parse_result = (urlparse(self.token.redirect_to))
         query_dict = QueryDict(parse_result.query, mutable=True)
-        url = urlunparse((parse_result.scheme, parse_result.netloc, parse_result.path, '', query_dict.urlencode(), ''))
+        url = urlunparse(
+            (
+                parse_result.scheme,
+                parse_result.netloc,
+                parse_result.path,
+                '',
+                query_dict.urlencode(), ''))
         logout(self.request)
         return HttpResponseRedirect(url)
+
+    def handle_unauthenticated_user(self):
+        return HttpResponseRedirect(self.token.rdirect_to)
+
 
 
 class Server(object):
