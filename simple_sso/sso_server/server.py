@@ -152,7 +152,6 @@ class LogoutView(AuthorizeView):
         return HttpResponseRedirect(self.token.rdirect_to)
 
 
-
 class Server(object):
     request_token_provider = RequestTokenProvider
     authorize_view = AuthorizeView
