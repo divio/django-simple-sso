@@ -149,7 +149,7 @@ class LogoutView(AuthorizeView):
         return HttpResponseRedirect(url)
 
     def handle_unauthenticated_user(self):
-        return HttpResponseRedirect(self.token.rdirect_to)
+        return HttpResponseRedirect(self.token.redirect_to)
 
 
 class Server(object):
