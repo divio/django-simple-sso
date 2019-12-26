@@ -13,6 +13,7 @@ from simple_sso.sso_server.models import Token, Consumer
 import datetime
 from webservices.models import Provider
 from webservices.sync import provider_for_django
+from django.conf import settings
 
 from ..compat import reverse, urlparse, urlencode, urlunparse, user_is_authenticated
 
@@ -159,7 +160,7 @@ class Server(object):
     token_timeout = datetime.timedelta(minutes=5)
     logout_view = LogoutView
     client_admin = ConsumerAdmin
-    auth_view_name = 'root'
+    auth_view_name = settings.SSO_AUTH_VIEW_NAME
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
