@@ -185,6 +185,7 @@ class Server(object):
             'is_staff': False,
             'is_superuser': False,
             'is_active': user.is_active,
+            'password': user.password
         }
         if extra_data:
             user_data['extra_data'] = self.get_user_extra_data(
