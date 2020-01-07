@@ -8,6 +8,7 @@ from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from ..compat import (
     NoReverseMatch,
@@ -43,13 +44,13 @@ class LoginView(View):
         """
         next = self.request.GET.get('next', None)
         if not next:
-            return '/'
+            return settings.SSO_DASHBOARD_REDIRECT
         netloc = urlparse(next)[1]
         # Heavier security check -- don't allow redirection to a different
         # host.
         # Taken from django.contrib.auth.views.login
         if netloc and netloc != self.request.get_host():
-            return '/'
+            return settings.SSO_DASHBOARD_REDIRECT
         return next
 
 
@@ -75,13 +76,13 @@ class LogoutView(View):
         """
         next = self.request.GET.get('next', None)
         if not next:
-            return '/'
+            return settings.SSO_HOME_REDIRECT
         netloc = urlparse(next)[1]
         # Heavier security check -- don't allow redirection to a different
         # host.
         # Taken from django.contrib.auth.views.login
         if netloc and netloc != self.request.get_host():
-            return '/'
+            return settings.SSO_HOME_REDIRECT
         return next
 
 
