@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.contrib.auth import logout
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
@@ -12,6 +13,7 @@ from simple_sso.sso_server.models import Token, Consumer
 import datetime
 from webservices.models import Provider
 from webservices.sync import provider_for_django
+from django.conf import settings
 
 from ..compat import reverse, urlparse, urlencode, urlunparse, user_is_authenticated
 
@@ -111,7 +113,8 @@ class VerificationProvider(BaseProvider, AuthorizeView):
     def provide(self, data):
         token = data['access_token']
         try:
-            self.token = Token.objects.select_related('user').get(access_token=token, consumer=self.consumer)
+            self.token = Token.objects.select_related('user').get(
+                access_token=token, consumer=self.consumer)
         except Token.DoesNotExist:
             return self.token_not_found()
         if not self.check_token_timeout():
@@ -130,13 +133,34 @@ class ConsumerAdmin(ModelAdmin):
     readonly_fields = ['public_key', 'private_key']
 
 
+class LogoutView(AuthorizeView):
+    server = None
+
+    def handle_authenticated_user(self):
+        parse_result = (urlparse(self.token.redirect_to))
+        query_dict = QueryDict(parse_result.query, mutable=True)
+        url = urlunparse(
+            (
+                parse_result.scheme,
+                parse_result.netloc,
+                parse_result.path,
+                '',
+                query_dict.urlencode(), ''))
+        logout(self.request)
+        return HttpResponseRedirect(url)
+
+    def handle_unauthenticated_user(self):
+        return HttpResponseRedirect(self.token.redirect_to)
+
+
 class Server(object):
     request_token_provider = RequestTokenProvider
     authorize_view = AuthorizeView
     verification_provider = VerificationProvider
     token_timeout = datetime.timedelta(minutes=5)
+    logout_view = LogoutView
     client_admin = ConsumerAdmin
-    auth_view_name = 'login'
+    auth_view_name = settings.SSO_AUTH_VIEW_NAME
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -161,6 +185,7 @@ class Server(object):
             'is_staff': False,
             'is_superuser': False,
             'is_active': user.is_active,
+            'password': user.password
         }
         if extra_data:
             user_data['extra_data'] = self.get_user_extra_data(
@@ -172,4 +197,5 @@ class Server(object):
             url(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)), name='simple-sso-request-token'),
             url(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
             url(r'^verify/$', provider_for_django(self.verification_provider(server=self)), name='simple-sso-verify'),
+            url(r'^logout/$', self.logout_view.as_view(server=self), name='simple-sso-serverlogout'),
         ]

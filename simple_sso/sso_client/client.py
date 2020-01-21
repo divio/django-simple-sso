@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
+from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from ..compat import (
     NoReverseMatch,
@@ -16,6 +19,8 @@ from ..compat import (
     urljoin,
     urlencode,
 )
+
+User = get_user_model()
 
 
 class LoginView(View):
@@ -29,7 +34,42 @@ class LoginView(View):
         path = reverse('simple-sso-authenticate')
         redirect_to = urlunparse((scheme, netloc, path, '', query, ''))
         request_token = self.client.get_request_token(redirect_to)
-        host = urljoin(self.client.server_url, 'authorize/')
+        if request_token != "":
+            host = urljoin(self.client.server_url, 'authorize/')
+            url = '%s?%s' % (host, urlencode([('token', request_token)]))
+            return HttpResponseRedirect(url)
+        else:
+            return redirect(settings.SSO_CLIENT)
+
+    def get_next(self):
+        """
+        Given a request, returns the URL where a user should be redirected to
+        after login. Defaults to '/'
+        """
+        next = self.request.GET.get('next', None)
+        if not next:
+            return settings.SSO_DASHBOARD_REDIRECT
+        netloc = urlparse(next)[1]
+        # Heavier security check -- don't allow redirection to a different
+        # host.
+        # Taken from django.contrib.auth.views.login
+        if netloc and netloc != self.request.get_host():
+            return settings.SSO_DASHBOARD_REDIRECT
+        return next
+
+
+class LogoutView(View):
+    client = None
+
+    def get(self, request):
+        next = self.get_next()
+        scheme = 'https' if request.is_secure() else 'http'
+        query = urlencode([('next', next)])
+        netloc = request.get_host()
+        path = reverse('simple-sso-logoutauth')
+        redirect_to = urlunparse((scheme, netloc, path, '', query, ''))
+        request_token = self.client.get_request_token(redirect_to)
+        host = urljoin(self.client.server_url, 'logout/')
         url = '%s?%s' % (host, urlencode([('token', request_token)]))
         return HttpResponseRedirect(url)
 
@@ -40,13 +80,13 @@ class LoginView(View):
         """
         next = self.request.GET.get('next', None)
         if not next:
-            return '/'
+            return settings.SSO_HOME_REDIRECT
         netloc = urlparse(next)[1]
         # Heavier security check -- don't allow redirection to a different
         # host.
         # Taken from django.contrib.auth.views.login
         if netloc and netloc != self.request.get_host():
-            return '/'
+            return settings.SSO_HOME_REDIRECT
         return next
 
 
@@ -63,9 +103,20 @@ class AuthenticateView(LoginView):
         return HttpResponseRedirect(next)
 
 
+class LogoutAuthView(LogoutView):
+    client = None
+
+    def get(self, request):
+        logout(request)
+        next = self.get_next()
+        return HttpResponseRedirect(next)
+
+
 class Client(object):
     login_view = LoginView
     authenticate_view = AuthenticateView
+    logout_auth_view = LogoutAuthView
+    logout_view = LogoutView
     backend = "%s.%s" % (ModelBackend.__module__, ModelBackend.__name__)
     user_extra_data = None
 
@@ -95,7 +146,10 @@ class Client(object):
         except NoReverseMatch:
             # thisisfine
             url = '/request-token/'
-        return self.consumer.consume(url, {'redirect_to': redirect_to})['request_token']
+        try:
+            return self.consumer.consume(url, {'redirect_to': redirect_to})
+        except:
+            return {"request_token": ""}
 
     def get_user(self, access_token):
         data = {'access_token': access_token}
@@ -116,7 +170,7 @@ class Client(object):
             user = User.objects.get(username=user_data['username'])
         except User.DoesNotExist:
             user = User(**user_data)
-        user.set_unusable_password()
+        # user.set_unusable_password()
         user.save()
         return user
 
@@ -124,4 +178,6 @@ class Client(object):
         return [
             url(r'^$', self.login_view.as_view(client=self), name='simple-sso-login'),
             url(r'^authenticate/$', self.authenticate_view.as_view(client=self), name='simple-sso-authenticate'),
+            url(r'^logout/$', self.logout_view.as_view(client=self), name='simple-sso-logout'),
+            url(r'^authlogout/$', self.logout_auth_view.as_view(client=self), name='simple-sso-logoutauth'),
         ]
