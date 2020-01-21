@@ -4,6 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
@@ -33,9 +34,12 @@ class LoginView(View):
         path = reverse('simple-sso-authenticate')
         redirect_to = urlunparse((scheme, netloc, path, '', query, ''))
         request_token = self.client.get_request_token(redirect_to)
-        host = urljoin(self.client.server_url, 'authorize/')
-        url = '%s?%s' % (host, urlencode([('token', request_token)]))
-        return HttpResponseRedirect(url)
+        if request_token != "":
+            host = urljoin(self.client.server_url, 'authorize/')
+            url = '%s?%s' % (host, urlencode([('token', request_token)]))
+            return HttpResponseRedirect(url)
+        else:
+            return redirect(settings.SSO_CLIENT)
 
     def get_next(self):
         """
@@ -142,7 +146,10 @@ class Client(object):
         except NoReverseMatch:
             # thisisfine
             url = '/request-token/'
-        return self.consumer.consume(url, {'redirect_to': redirect_to})['request_token']
+        try:
+            return self.consumer.consume(url, {'redirect_to': redirect_to})
+        except:
+            return {"request_token": ""}
 
     def get_user(self, access_token):
         data = {'access_token': access_token}
