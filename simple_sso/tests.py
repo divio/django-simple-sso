@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+from urllib.parse import urlparse
+
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.hashers import is_password_usable
@@ -10,9 +11,8 @@ from simple_sso.test_urls import test_client
 from simple_sso.test_utils.context_managers import (SettingsOverride, 
     UserLoginContext)
 from simple_sso.utils import gen_secret_key
+from django.urls import reverse
 from webservices.sync import DjangoTestingConsumer
-
-from .compat import reverse, urlparse
 
 
 class SimpleSSOTests(TestCase):

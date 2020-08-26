@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 from django.conf import settings
 
 class NULL:
     pass
 
-class SettingsOverride(object):
+class SettingsOverride:
     """
     Overrides Django settings within a context and resets them to their inital
     values on exit.
@@ -32,7 +31,7 @@ class SettingsOverride(object):
                 delattr(settings, key) # do not pollute the context!
 
 
-class UserLoginContext(object):
+class UserLoginContext:
     def __init__(self, testcase, user):
         self.testcase = testcase
         self.user = user

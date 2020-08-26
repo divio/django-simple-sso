@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from random import SystemRandom
 from django.conf import settings
 import string

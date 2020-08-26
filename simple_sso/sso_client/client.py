@@ -1,21 +1,14 @@
-# -*- coding: utf-8 -*-
-from django.conf.urls import url
+from urllib.parse import urlparse, urlunparse, urljoin, urlencode
+
+from django.urls import re_path
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
+from django.urls import NoReverseMatch, reverse
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
-
-from ..compat import (
-    NoReverseMatch,
-    reverse,
-    urlparse,
-    urlunparse,
-    urljoin,
-    urlencode,
-)
 
 
 class LoginView(View):
@@ -63,7 +56,7 @@ class AuthenticateView(LoginView):
         return HttpResponseRedirect(next)
 
 
-class Client(object):
+class Client:
     login_view = LoginView
     authenticate_view = AuthenticateView
     backend = "%s.%s" % (ModelBackend.__module__, ModelBackend.__name__)
@@ -122,6 +115,6 @@ class Client(object):
 
     def get_urls(self):
         return [
-            url(r'^$', self.login_view.as_view(client=self), name='simple-sso-login'),
-            url(r'^authenticate/$', self.authenticate_view.as_view(client=self), name='simple-sso-authenticate'),
+            re_path(r'^$', self.login_view.as_view(client=self), name='simple-sso-login'),
+            re_path(r'^authenticate/$', self.authenticate_view.as_view(client=self), name='simple-sso-authenticate'),
         ]
