@@ -167,7 +167,9 @@ class Server:
 
     def get_urls(self):
         return [
-            re_path(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)), name='simple-sso-request-token'),
+            re_path(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)),
+                    name='simple-sso-request-token'),
             re_path(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
-            re_path(r'^verify/$', provider_for_django(self.verification_provider(server=self)), name='simple-sso-verify'),
+            re_path(r'^verify/$', provider_for_django(
+                    self.verification_provider(server=self)), name='simple-sso-verify'),
         ]

@@ -79,7 +79,8 @@ class Client:
         netloc = parse_result.hostname
         if parse_result.port:
             netloc += ':%s' % parse_result.port
-        server_url = urlunparse((parse_result.scheme, netloc, parse_result.path, parse_result.params, parse_result.query, parse_result.fragment))
+        server_url = urlunparse((parse_result.scheme, netloc, parse_result.path,
+                                 parse_result.params, parse_result.query, parse_result.fragment))
         return cls(server_url, public_key, private_key)
 
     def get_request_token(self, redirect_to):
