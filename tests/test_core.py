@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+from urllib.parse import urlparse
+
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.hashers import is_password_usable
@@ -6,13 +7,12 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.test.testcases import TestCase
 from simple_sso.sso_server.models import Token, Consumer
-from simple_sso.test_urls import test_client
-from simple_sso.test_utils.context_managers import (SettingsOverride, 
-    UserLoginContext)
+from tests.urls import test_client
+from tests.utils.context_managers import (SettingsOverride,
+                                          UserLoginContext)
 from simple_sso.utils import gen_secret_key
+from django.urls import reverse
 from webservices.sync import DjangoTestingConsumer
-
-from .compat import reverse, urlparse
 
 
 class SimpleSSOTests(TestCase):
@@ -20,18 +20,24 @@ class SimpleSSOTests(TestCase):
 
     def setUp(self):
         import requests
+
         def get(url, params={}, headers={}, cookies=None, auth=None, **kwargs):
             return self.client.get(url, params)
         requests.get = get
-        test_client.consumer = DjangoTestingConsumer(self.client, test_client.server_url, test_client.public_key, test_client.private_key)
+        test_client.consumer = DjangoTestingConsumer(
+            self.client, test_client.server_url, test_client.public_key, test_client.private_key)
 
     def _get_consumer(self):
-        return Consumer.objects.create(name='test', private_key=settings.SSO_PRIVATE_KEY, public_key=settings.SSO_PUBLIC_KEY)
-    
+        return Consumer.objects.create(
+            name='test',
+            private_key=settings.SSO_PRIVATE_KEY,
+            public_key=settings.SSO_PUBLIC_KEY,
+        )
+
     def test_walkthrough(self):
         USERNAME = PASSWORD = 'myuser'
         server_user = User.objects.create_user(USERNAME, 'my@user.com', PASSWORD)
-        consumer = self._get_consumer()
+        self._get_consumer()
         # verify theres no tokens yet
         self.assertEqual(Token.objects.count(), 0)
         response = self.client.get(reverse('simple-sso-login'))
@@ -85,11 +91,11 @@ class SimpleSSOTests(TestCase):
         self.assertTrue(is_password_usable(server_user.password))
         for key in ['username', 'email', 'first_name', 'last_name']:
             self.assertEqual(getattr(client_user, key), getattr(server_user, key))
-    
+
     def test_user_already_logged_in(self):
         USERNAME = PASSWORD = 'myuser'
         server_user = User.objects.create_user(USERNAME, 'my@user.com', PASSWORD)
-        consumer = self._get_consumer()
+        self._get_consumer()
         with UserLoginContext(self, server_user):
             # try logging in and auto-follow all 302s
             self.client.get(reverse('simple-sso-login'), follow=True)
@@ -99,7 +105,7 @@ class SimpleSSOTests(TestCase):
             self.assertTrue(is_password_usable(server_user.password))
             for key in ['username', 'email', 'first_name', 'last_name']:
                 self.assertEqual(getattr(client_user, key), getattr(server_user, key))
-    
+
     def test_custom_keygen(self):
         # WARNING: The following test uses a key generator function that is
         # highly insecure and should never under any circumstances be used in

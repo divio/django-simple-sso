@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from urllib.parse import urlparse, urlencode, urlunparse
 
-from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.http import (HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict)
+from django.urls import reverse
+from django.urls import re_path
 from django.utils import timezone
 from django.views.generic.base import View
 from itsdangerous import URLSafeTimedSerializer
@@ -12,8 +12,6 @@ from simple_sso.sso_server.models import Token, Consumer
 import datetime
 from webservices.models import Provider
 from webservices.sync import provider_for_django
-
-from ..compat import reverse, urlparse, urlencode, urlunparse, user_is_authenticated
 
 
 class BaseProvider(Provider):
@@ -60,7 +58,7 @@ class AuthorizeView(View):
         if not self.check_token_timeout():
             return self.token_timeout()
         self.token.refresh()
-        if user_is_authenticated(request.user):
+        if request.user.is_authenticated:
             return self.handle_authenticated_user()
         else:
             return self.handle_unauthenticated_user()
@@ -130,7 +128,7 @@ class ConsumerAdmin(ModelAdmin):
     readonly_fields = ['public_key', 'private_key']
 
 
-class Server(object):
+class Server:
     request_token_provider = RequestTokenProvider
     authorize_view = AuthorizeView
     verification_provider = VerificationProvider
@@ -169,7 +167,9 @@ class Server(object):
 
     def get_urls(self):
         return [
-            url(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)), name='simple-sso-request-token'),
-            url(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
-            url(r'^verify/$', provider_for_django(self.verification_provider(server=self)), name='simple-sso-verify'),
+            re_path(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)),
+                    name='simple-sso-request-token'),
+            re_path(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
+            re_path(r'^verify/$', provider_for_django(
+                    self.verification_provider(server=self)), name='simple-sso-verify'),
         ]

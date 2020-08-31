@@ -1,16 +1,22 @@
+=================
 django-simple-sso
 =================
 
-The latest version of this package supports:
-
-* Django >= 1.11
+|pypi| |build| |coverage|
 
 
-#######################################
+Documentation
+=============
+
+See ``REQUIREMENTS`` in the `setup.py <https://github.com/divio/django-simple-sso/blob/master/setup.py>`_
+file for additional dependencies:
+
+|python| |django|
+
+
 Django Simple SSO Specification (DRAFT)
-#######################################
+=======================================
 
-***********
 Terminology
 ***********
 
@@ -38,10 +44,8 @@ A secret key shared between the **Server** and a single **Client**. This secret
 should never be shared with anyone other than the **Server** and **Client** and
 must not be transferred unencrypted.
 
-********
 Workflow
 ********
-
 
 * User wants to log into a **Client** by clicking a "Login" button. The
   initially requested URL can be passed using the ``next`` GET parameter.
@@ -59,8 +63,6 @@ Workflow
   object.
 * The **Client** logs the user in using the Django User recieved from the **Server**.
 
-
-********
 Requests
 ********
 
@@ -137,8 +139,6 @@ Auth Token Verification Request
       query string containing the ``user`` key which is the JSON serialized
       representation of the Django user to create as well as the ``signature``.
 
-
-********
 Security
 ********
 
@@ -154,8 +154,6 @@ Example
 GET Request with the GET parameters ``key=bundle123`` and the private key
 ``secret key``: ``fbf6396d0fc40d563e2be3c861f7eb5a1b821b76c2ac943d40a7a63b288619a9``
 
-
-***************
 The User object
 ***************
 
@@ -175,8 +173,6 @@ The user object contains must contain at least the following data:
 * ``is_superuser``: Does this user have superuser access to the **Client**?
 * ``is_active``: Is the user active?
 
-
-**************
 Implementation
 **************
 
@@ -185,7 +181,7 @@ On the server
 
 * Add ``simple_sso.sso_server`` to ``INSTALLED_APPS``.
 * Create an instance (potentially of a subclass) of
-  ``simple_sso.sso_server.server.Server`` and include the return value of the 
+  ``simple_sso.sso_server.server.Server`` and include the return value of the
   ``get_urls`` method on that instance into your url patterns.
 
 
@@ -200,3 +196,27 @@ On the client
   the root where the ``simple_sso.sso_server.urls`` where include on the
   **Server**.
 * Add the ``simple_sso.sso_client.urls`` patterns somewhere on the client.
+
+
+Running Tests
+*************
+
+You can run tests by executing::
+
+    virtualenv env
+    source env/bin/activate
+    pip install -r tests/requirements.txt
+    python setup.py test
+
+
+.. |pypi| image:: https://badge.fury.io/py/django-simple.sso.svg
+    :target: http://badge.fury.io/py/django-simple.sso
+.. |build| image:: https://travis-ci.org/divio/django-simple.sso.svg?branch=master
+    :target: https://travis-ci.org/divio/django-simple.sso
+.. |coverage| image:: https://codecov.io/gh/divio/django-simple.sso/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/divio/django-simple.sso
+
+.. |python| image:: https://img.shields.io/badge/python-3.5+-blue.svg
+    :target: https://pypi.org/project/django-simple.sso/
+.. |django| image:: https://img.shields.io/badge/django-2.2,%203.0,%203.1-blue.svg
+    :target: https://www.djangoproject.com/
