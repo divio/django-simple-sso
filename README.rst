@@ -61,7 +61,7 @@ Workflow
   **Auth Token**, this is called the **Auth Token Verification Request**.
 * If the **Auth Token** is valid, the **Server** returns a serialized Django User
   object.
-* The **Client** logs the user in using the Django User recieved from the **Server**.
+* The **Client** logs the user in using the Django User received from the **Server**.
 
 Requests
 ********
