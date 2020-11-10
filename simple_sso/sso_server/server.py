@@ -129,47 +129,59 @@ class ConsumerAdmin(ModelAdmin):
 
 
 class Server:
-    request_token_provider = RequestTokenProvider
-    authorize_view = AuthorizeView
-    verification_provider = VerificationProvider
-    token_timeout = datetime.timedelta(minutes=5)
-    client_admin = ConsumerAdmin
-    auth_view_name = 'login'
+    class __Server:
+        request_token_provider = RequestTokenProvider
+        authorize_view = AuthorizeView
+        verification_provider = VerificationProvider
+        token_timeout = datetime.timedelta(minutes=5)
+        client_admin = ConsumerAdmin
+        auth_view_name = 'login'
 
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-        self.register_admin()
+        def __init__(self, **kwargs):
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+            self.register_admin()
 
-    def register_admin(self):
-        admin.site.register(Consumer, self.client_admin)
+        def register_admin(self):
+            admin.site.register(Consumer, self.client_admin)
 
-    def has_access(self, user, consumer):
-        return True
+        def has_access(self, user, consumer):
+            return True
 
-    def get_user_extra_data(self, user, consumer, extra_data):
-        raise NotImplementedError()
+        def get_user_extra_data(self, user, consumer, extra_data):
+            raise NotImplementedError()
 
-    def get_user_data(self, user, consumer, extra_data=None):
-        user_data = {
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_staff': False,
-            'is_superuser': False,
-            'is_active': user.is_active,
-        }
-        if extra_data:
-            user_data['extra_data'] = self.get_user_extra_data(
-                user, consumer, extra_data)
-        return user_data
+        def get_user_data(self, user, consumer, extra_data=None):
+            user_data = {
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_staff': False,
+                'is_superuser': False,
+                'is_active': user.is_active,
+            }
+            if extra_data:
+                user_data['extra_data'] = self.get_user_extra_data(
+                    user, consumer, extra_data)
+            return user_data
 
-    def get_urls(self):
-        return [
-            re_path(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)),
-                    name='simple-sso-request-token'),
-            re_path(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
-            re_path(r'^verify/$', provider_for_django(
+        def get_urls(self):
+            return [
+                re_path(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)),
+                        name='simple-sso-request-token'),
+                re_path(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
+                re_path(r'^verify/$', provider_for_django(
                     self.verification_provider(server=self)), name='simple-sso-verify'),
-        ]
+            ]
+
+    instance = None
+    def __init__(self, **kwargs):
+        # Checks for existing instance of class
+        if Server.instance is None:
+            # If not existing yet, a new instance will be created
+            Server.instance = Server.__Server(**kwargs)
+
+    def __getattr__(self, item):
+        # Wraps getattr builtin to be used on single instance only
+        return getattr(self.instance, item)
