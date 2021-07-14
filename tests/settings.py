@@ -56,6 +56,7 @@ def runtests():
     from django import setup
     from django.conf import settings
     from django.test.utils import get_runner
+    from django.core.management.utils import get_random_secret_key
 
     settings.configure(
         INSTALLED_APPS=INSTALLED_APPS,
@@ -67,6 +68,8 @@ def runtests():
         SSO_PRIVATE_KEY='private',
         SSO_PUBLIC_KEY='public',
         SSO_SERVER='http://localhost/server/',
+        DEFAULT_AUTO_FIELD='django.db.models.AutoField',
+        SECRET_KEY=get_random_secret_key()
     )
     setup()
 

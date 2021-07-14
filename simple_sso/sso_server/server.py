@@ -151,6 +151,10 @@ class Server:
         raise NotImplementedError()
 
     def get_user_data(self, user, consumer, extra_data=None):
+        groups = []
+        for group in user.groups.all():
+            groups.append(group.name)
+
         user_data = {
             'username': user.username,
             'email': user.email,
@@ -159,6 +163,7 @@ class Server:
             'is_staff': False,
             'is_superuser': False,
             'is_active': user.is_active,
+            'groups': groups,
         }
         if extra_data:
             user_data['extra_data'] = self.get_user_extra_data(

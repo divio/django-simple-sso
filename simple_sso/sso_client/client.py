@@ -3,7 +3,7 @@ from urllib.parse import urlparse, urlunparse, urljoin, urlencode
 from django.urls import re_path
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.http import HttpResponseRedirect
 from django.urls import NoReverseMatch, reverse
 from django.views.generic import View
@@ -106,6 +106,13 @@ class Client:
         return user
 
     def build_user(self, user_data):
+        # Check groups and remove from kwargs as they cannot be passed (many-to-many restriction)
+        server_groups = []
+        if 'groups' in user_data:
+            server_groups = user_data['groups']
+            del user_data['groups']
+
+        # Build the base user
         try:
             user = User.objects.get(username=user_data['username'])
             # Update user data, excluding username changes
@@ -115,6 +122,13 @@ class Client:
         except User.DoesNotExist:
             user = User(**user_data)
         user.set_unusable_password()
+
+        # Append the groups
+        for group in server_groups:
+            if not user.groups.filter(name=group).exists():
+                django_group, created = Group.objects.get_or_create(name=group)
+                user.groups.add(django_group)
+
         user.save()
         return user
 

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.hashers import is_password_usable
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect, HttpResponse
 from django.test.testcases import TestCase
 from simple_sso.sso_server.models import Token, Consumer
@@ -145,6 +146,41 @@ class SimpleSSOTests(TestCase):
             client_user = get_user(self.client)
             for key in ['username', 'email', 'first_name', 'last_name']:
                 self.assertEqual(getattr(client_user, key), getattr(server_user, key))
+
+    def test_user_groups(self):
+        """ User data update test
+
+        Tests whether sso server user data changes will be forwared to the client on the user's next login.
+
+        """
+        USERNAME = PASSWORD = 'myuser'
+        server_user = User.objects.create_user(
+            USERNAME,
+            'bob@bobster.org',
+            PASSWORD
+        )
+        test_group, created = Group.objects.get_or_create(name='SSO_SUPERADMIN')
+        server_user.groups.add(test_group)
+
+        self._get_consumer()
+
+        with UserLoginContext(self, server_user):
+            # First login
+            # try logging in and auto-follow all 302s
+            self.client.get(reverse('simple-sso-login'), follow=True)
+            # check the user
+            client_user = get_user(self.client)
+            for key in ['username', 'email', 'groups']:
+                self.assertEqual(getattr(client_user, key), getattr(server_user, key))
+
+            # Check the groups
+            client_groups = client_user.groups.all()
+            server_groups = server_user.groups.all()
+
+            # NOTE: This test does/tests anything, as DB is shared across client/server so on .all operation always groups are present without anything special.
+            # If you are reading this and know how to implement a "good" test, please, feel free to PR.
+            for group in server_groups:
+                self.assertTrue(group in client_groups)
 
     def test_custom_keygen(self):
         # WARNING: The following test uses a key generator function that is
