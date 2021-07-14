@@ -192,10 +192,35 @@ On the client
   **Server**.
 * Add the ``SIMPLE_SSO_SECRET`` and ``SIMPLE_SSO_KEY`` settings as provided by
   the **Server**'s ``simple_sso.sso_server.models.Client`` model.
-* Add the ``SIMPLE_SSO_SERVER`` setting which is the absolute URL pointing to
+* Add the ``SIMPLE_SSO_SERVER_URL`` setting which is the absolute URL pointing to
   the root where the ``simple_sso.sso_server.urls`` where include on the
   **Server**.
 * Add the ``simple_sso.sso_client.urls`` patterns somewhere on the client.
+
+  **Optional steps & features**
+
+* [**Keep alive / Single Sign Out**]: To enable a simple single signout, you just have to 
+  add the middleware `simple_sso.sso_client.middleware.PostAuthenticationMiddleware`
+  somewhere after `django.contrib.auth.middleware.AuthenticationMiddleware` or your
+  equivalent `AuthenticationMiddleware`.
+    
+    * If you want to reflect any logout on the client on your remote server (and other clients
+    connected to it) just add `'simple_sso.sso_client'` on the `INSTALLED_APPS` on your `settings.py`.
+    This will trigger a call to the server on each user logout that will enforce the logout on the server.
+    * Keep alive / single sign out have the following custom settings:
+      * **SSO_KEEP_ALIVE**: This setting is defaulted to `60` (seconds). This means that every
+        60 seconds the validity of a logged user would be checked to the server. If the user have
+        been logged out for some reason, that state would be reflected on client.
+      
+        You can set this to 0 or any negative number to force the verification check on
+        each request. However, take into account that overhead on client and server sides.
+      * **SSO_TOKEN_TIMEOUT**: This setting is defaulted to `300` seconds (5 minutes). This sets
+      how long a token can be usable for authentication purposes. In most cases 5 minutes would
+      be more than enough.
+      * **SSO_TOKEN_VERIFY_TIMEOUT**: This setting is defaulted to `3600` seconds (1 hour). This
+      sets how long a token can be usable for verifying purposes. When the token expires the SSO
+      session expires too and the client will enforce the browser to generate a new token.
+      In some scenarios this timeout might be increased to the session expiration timeout.
 
 
 Running Tests

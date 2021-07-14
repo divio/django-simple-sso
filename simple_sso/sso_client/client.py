@@ -49,6 +49,7 @@ class AuthenticateView(LoginView):
     def get(self, request):
         raw_access_token = request.GET['access_token']
         access_token = URLSafeTimedSerializer(self.client.private_key).loads(raw_access_token)
+        request.session['sso_access_token'] = access_token
         user = self.client.get_user(access_token)
         user.backend = self.client.backend
         login(request, user)

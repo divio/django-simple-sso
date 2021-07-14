@@ -8,7 +8,7 @@ from simple_sso.sso_client.client import Client
 from simple_sso.sso_server.server import Server
 
 test_server = Server()
-test_client = Client(settings.SSO_SERVER, settings.SSO_PUBLIC_KEY, settings.SSO_PRIVATE_KEY)
+test_client = Client(settings.SSO_SERVER_URL, settings.SSO_PUBLIC_KEY, settings.SSO_PRIVATE_KEY)
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),

@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.messages',
     'simple_sso.sso_server',
+    'simple_sso.sso_client',
     'simple_sso',
     'tests',
 ]
@@ -48,6 +49,7 @@ TEMPLATES = [
 MIDDLEWARES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'simple_sso.sso_client.middleware.PostAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
@@ -56,6 +58,7 @@ def runtests():
     from django import setup
     from django.conf import settings
     from django.test.utils import get_runner
+    from django.core.management.utils import get_random_secret_key
 
     settings.configure(
         INSTALLED_APPS=INSTALLED_APPS,
@@ -66,7 +69,9 @@ def runtests():
         MIDDLEWARE=MIDDLEWARES,
         SSO_PRIVATE_KEY='private',
         SSO_PUBLIC_KEY='public',
-        SSO_SERVER='http://localhost/server/',
+        SSO_SERVER_URL='http://localhost/server/',
+        DEFAULT_AUTO_FIELD='django.db.models.AutoField',
+        SECRET_KEY=get_random_secret_key()
     )
     setup()
 

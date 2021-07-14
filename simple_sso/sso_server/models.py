@@ -1,7 +1,8 @@
-from django.conf import settings
+from django.contrib.sessions.models import Session
 from django.db import models
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
+from simple_sso.settings import settings
 
 from ..utils import gen_secret_key
 
@@ -52,6 +53,16 @@ class Consumer(models.Model):
         self.save()
 
 
+def logout_token(sender, request, **kwargs):
+    """
+    A signal receiver which removes a token when its users logs out.
+    """
+    tokens = Token.objects.select_related('session').filter(session__session_key=request.session.session_key)
+
+    for token in tokens:
+        token.delete()
+
+
 class Token(models.Model):
     consumer = models.ForeignKey(
         Consumer,
@@ -70,6 +81,11 @@ class Token(models.Model):
     redirect_to = models.CharField(max_length=255)
     user = models.ForeignKey(
         getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    session = models.ForeignKey(
+        Session,
         null=True,
         on_delete=models.CASCADE,
     )

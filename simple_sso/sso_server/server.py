@@ -1,17 +1,27 @@
+import datetime
 from urllib.parse import urlparse, urlencode, urlunparse
 
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
-from django.http import (HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict)
-from django.urls import reverse
+from django.contrib.sessions.models import Session
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict
 from django.urls import re_path
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic.base import View
 from itsdangerous import URLSafeTimedSerializer
+from simple_sso.settings import settings
 from simple_sso.sso_server.models import Token, Consumer
-import datetime
 from webservices.models import Provider
 from webservices.sync import provider_for_django
+
+
+class ThrowableHttpResponse(Exception):
+    def __init__(self, response: HttpResponse):
+        self.response = response
+
+    def getHttpResponse(self) -> HttpResponse:
+        return self.response
 
 
 class BaseProvider(Provider):
@@ -26,6 +36,12 @@ class BaseProvider(Provider):
         except Consumer.DoesNotExist:
             return None
         return self.consumer.private_key
+
+    def get_response(self, method, signed_data, get_header):
+        try:
+            return super().get_response(method, signed_data, get_header)
+        except ThrowableHttpResponse as response:
+            return response.getHttpResponse()
 
 
 class RequestTokenProvider(BaseProvider):
@@ -72,9 +88,12 @@ class AuthorizeView(View):
     def token_timeout(self):
         return HttpResponseForbidden('Token timed out')
 
-    def check_token_timeout(self):
+    def check_token_timeout(self, timeout=None):
+        if timeout is None:
+            timeout = self.server.token_timeout
+
         delta = timezone.now() - self.token.timestamp
-        if delta > self.server.token_timeout:
+        if delta > timeout:
             self.token.delete()
             return False
         else:
@@ -96,6 +115,8 @@ class AuthorizeView(View):
 
     def success(self):
         self.token.user = self.request.user
+        self.token.session = Session.objects.get(
+            pk=self.request.session.session_key)
         self.token.save()
         serializer = URLSafeTimedSerializer(self.token.consumer.private_key)
         parse_result = urlparse(self.token.redirect_to)
@@ -111,11 +132,11 @@ class VerificationProvider(BaseProvider, AuthorizeView):
         try:
             self.token = Token.objects.select_related('user').get(access_token=token, consumer=self.consumer)
         except Token.DoesNotExist:
-            return self.token_not_found()
-        if not self.check_token_timeout():
-            return self.token_timeout()
+            raise ThrowableHttpResponse(self.token_not_found())
+        if not self.check_token_timeout(self.server.token_verify_timeout):
+            raise ThrowableHttpResponse(self.token_timeout())
         if not self.token.user:
-            return self.token_not_bound()
+            raise ThrowableHttpResponse(self.token_not_bound())
         extra_data = data.get('extra_data', None)
         return self.server.get_user_data(
             self.token.user, self.consumer, extra_data=extra_data)
@@ -124,16 +145,48 @@ class VerificationProvider(BaseProvider, AuthorizeView):
         return HttpResponseForbidden("Invalid token")
 
 
+class LogoutProvider(VerificationProvider):
+    def provide(self, data):
+        token = data['access_token']
+        try:
+            self.token = Token.objects.select_related('session').get(
+                access_token=token, consumer=self.consumer)
+        except Token.DoesNotExist:
+            raise ThrowableHttpResponse(self.token_not_found())
+        if not self.check_token_timeout(self.server.token_verify_timeout):
+            raise ThrowableHttpResponse(self.token_timeout())
+        if not self.token.session:
+            raise ThrowableHttpResponse(self.token_not_bound())
+
+        # Destroy the session (the cascade process will cause the token removal)
+        self.token.session.delete()
+        return {'status': 'ok'}
+
+
 class ConsumerAdmin(ModelAdmin):
     readonly_fields = ['public_key', 'private_key']
+
+
+class TokenAdmin(ModelAdmin):
+    readonly_fields = [
+        'access_token',
+        'consumer',
+        'request_token',
+        'session',
+        'user',
+    ]
 
 
 class Server:
     request_token_provider = RequestTokenProvider
     authorize_view = AuthorizeView
     verification_provider = VerificationProvider
-    token_timeout = datetime.timedelta(minutes=5)
-    client_admin = ConsumerAdmin
+    logout_provider = LogoutProvider
+    token_timeout = datetime.timedelta(seconds=settings.SSO_TOKEN_TIMEOUT)
+    token_verify_timeout = datetime.timedelta(
+        seconds=settings.SSO_TOKEN_VERIFY_TIMEOUT)
+    consumer_admin = ConsumerAdmin
+    token_admin = TokenAdmin
     auth_view_name = 'login'
 
     def __init__(self, **kwargs):
@@ -142,7 +195,8 @@ class Server:
         self.register_admin()
 
     def register_admin(self):
-        admin.site.register(Consumer, self.client_admin)
+        admin.site.register(Consumer, self.consumer_admin)
+        admin.site.register(Token, self.token_admin)
 
     def has_access(self, user, consumer):
         return True
@@ -172,4 +226,6 @@ class Server:
             re_path(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
             re_path(r'^verify/$', provider_for_django(
                     self.verification_provider(server=self)), name='simple-sso-verify'),
+            re_path(r'^logout/$', provider_for_django(
+                    self.logout_provider(server=self)), name='simple-sso-logout'),
         ]
