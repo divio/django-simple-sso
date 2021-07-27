@@ -1,3 +1,4 @@
+from copy import copy
 from urllib.parse import urlparse, urlunparse, urljoin, urlencode
 
 from django.urls import re_path
@@ -109,8 +110,10 @@ class Client:
         try:
             user = User.objects.get(username=user_data['username'])
             # Update user data, excluding username changes
-            del user_data['username']
-            for _attr, _val in user_data.items():
+            # Work on copied _tmp dict to keep an untouched user_data
+            user_data_tmp = copy(user_data)
+            del user_data_tmp['username']
+            for _attr, _val in user_data_tmp.items():
                 setattr(user, _attr, _val)
         except User.DoesNotExist:
             user = User(**user_data)
