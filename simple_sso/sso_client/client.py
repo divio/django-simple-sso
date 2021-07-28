@@ -123,13 +123,14 @@ class Client:
             user = User(**user_data)
         user.set_unusable_password()
 
+        user.save()
+
         # Append the groups
         for group in server_groups:
             if not user.groups.filter(name=group).exists():
                 django_group, created = Group.objects.get_or_create(name=group)
                 user.groups.add(django_group)
 
-        user.save()
         return user
 
     def get_urls(self):
