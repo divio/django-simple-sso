@@ -106,6 +106,46 @@ class SimpleSSOTests(TestCase):
             for key in ['username', 'email', 'first_name', 'last_name']:
                 self.assertEqual(getattr(client_user, key), getattr(server_user, key))
 
+    def test_user_data_updated(self):
+        """ User data update test
+
+        Tests whether sso server user data changes will be forwared to the client on the user's next login.
+
+        """
+        USERNAME = PASSWORD = 'myuser'
+        extra_data = {
+            "first_name": "bob",
+            "last_name": "bobster",
+        }
+        server_user = User.objects.create_user(
+            USERNAME,
+            'bob@bobster.org',
+            PASSWORD,
+            **extra_data,
+        )
+        self._get_consumer()
+
+        with UserLoginContext(self, server_user):
+            # First login
+            # try logging in and auto-follow all 302s
+            self.client.get(reverse('simple-sso-login'), follow=True)
+            # check the user
+            client_user = get_user(self.client)
+            for key in ['username', 'email', 'first_name', 'last_name']:
+                self.assertEqual(getattr(client_user, key), getattr(server_user, key))
+
+        # User data changes
+        server_user.first_name = "Alice"
+        server_user.email = "alice@bobster.org"
+        server_user.save()
+
+        with UserLoginContext(self, server_user):
+            # Second login
+            self.client.get(reverse('simple-sso-login'), follow=True)
+            client_user = get_user(self.client)
+            for key in ['username', 'email', 'first_name', 'last_name']:
+                self.assertEqual(getattr(client_user, key), getattr(server_user, key))
+
     def test_custom_keygen(self):
         # WARNING: The following test uses a key generator function that is
         # highly insecure and should never under any circumstances be used in
