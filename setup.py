@@ -35,7 +35,7 @@ CLASSIFIERS = [
 
 
 setup(
-    name='divio-simple-sso',
+    name='django-simple-sso',
     version=__version__,
     author='Divio AG',
     author_email='info@divio.com',
