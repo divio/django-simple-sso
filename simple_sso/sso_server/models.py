@@ -53,16 +53,6 @@ class Consumer(models.Model):
         self.save()
 
 
-def logout_token(sender, request, **kwargs):
-    """
-    A signal receiver which removes a token when its users logs out.
-    """
-    tokens = Token.objects.select_related('session').filter(session__session_key=request.session.session_key)
-
-    for token in tokens:
-        token.delete()
-
-
 class Token(models.Model):
     consumer = models.ForeignKey(
         Consumer,
