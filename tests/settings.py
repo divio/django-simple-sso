@@ -51,7 +51,6 @@ MIDDLEWARES = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-
 def runtests():
     from django import setup
     from django.conf import settings
@@ -67,6 +66,8 @@ def runtests():
         SSO_PRIVATE_KEY='private',
         SSO_PUBLIC_KEY='public',
         SSO_SERVER='http://localhost/server/',
+        SECRET_KEY='aRandomSecretKey',
+        DEFAULT_AUTO_FIELD='django.db.models.AutoField',
     )
     setup()
 
