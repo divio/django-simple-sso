@@ -67,7 +67,7 @@ class Token(models.Model):
         default=TokenSecretKeyGenerator('access_token')
     )
     timestamp = models.DateTimeField(default=timezone.now)
-    redirect_to = models.CharField(max_length=255)
+    redirect_to = models.CharField(max_length=1023)
     user = models.ForeignKey(
         getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
         null=True,
