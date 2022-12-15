@@ -145,7 +145,7 @@ Security
 Every request is signed using HMAC-SHA256. The signature is in the ``signature``
 parameter. The signature message is the urlencoded, alphabetically ordered
 query string. The signature key is the **Secret** of the **Client**. To verify
-the signature the ``key`` paramater holding the **key** of the **Client** is
+the signature the ``key`` parameter holding the **key** of the **Client** is
 also sent with every request from the **Client** to the **Server**.
 
 Example
@@ -161,7 +161,7 @@ The User object returned by a successful **Auth Token Verification Request**
 does not contain all the information about the Django User, in particular, it
 does not contain the password.
 
-The user object contains must contain at least the following data:
+The user object contains at least the following data:
 
 * ``username``: The unique username of this user.
 * ``email``: The email of this user.
