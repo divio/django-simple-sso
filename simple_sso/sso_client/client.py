@@ -4,12 +4,15 @@ from urllib.parse import urlparse, urlunparse, urljoin, urlencode
 from django.urls import re_path
 from django.contrib.auth import login
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.urls import NoReverseMatch, reverse
+from django.contrib.auth import get_user_model
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
 from webservices.sync import SyncConsumer
+
+
+User = get_user_model()
 
 
 class LoginView(View):
