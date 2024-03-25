@@ -2,6 +2,14 @@
 Changelog
 =========
 
+
+1.3.0 (unreleased)
+==================
+
+* Update testing configuration to Django 4.2 and 5.0
+* Update readme to reflect latest Python and Django support
+
+
 1.2.0 (2022-12-14)
 ==================
 
