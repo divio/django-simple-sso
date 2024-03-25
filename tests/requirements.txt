@@ -1,3 +1,4 @@
 tox
 coverage
 flake8
+packaging
