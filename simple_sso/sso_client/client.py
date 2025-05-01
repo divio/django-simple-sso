@@ -9,16 +9,17 @@ from django.http import HttpResponseRedirect
 from django.urls import NoReverseMatch, reverse
 from django.views.generic import View
 from itsdangerous import URLSafeTimedSerializer
-from webservices.sync import SyncConsumer
+
+from simple_sso.utils import SyncConsumer
 
 
 class LoginView(View):
     client = None
 
     def get(self, request):
-        next = self.get_next()
+        next_ = self.get_next()
         scheme = 'https' if request.is_secure() else 'http'
-        query = urlencode([('next', next)])
+        query = urlencode([('next', next_)])
         netloc = request.get_host()
         path = reverse('simple-sso-authenticate')
         redirect_to = urlunparse((scheme, netloc, path, '', query, ''))
@@ -32,16 +33,16 @@ class LoginView(View):
         Given a request, returns the URL where a user should be redirected to
         after login. Defaults to '/'
         """
-        next = self.request.GET.get('next', None)
-        if not next:
+        next_ = self.request.GET.get('next', None)
+        if not next_:
             return '/'
-        netloc = urlparse(next)[1]
+        netloc = urlparse(next_)[1]
         # Heavier security check -- don't allow redirection to a different
         # host.
         # Taken from django.contrib.auth.views.login
         if netloc and netloc != self.request.get_host():
             return '/'
-        return next
+        return next_
 
 
 class AuthenticateView(LoginView):
@@ -53,8 +54,8 @@ class AuthenticateView(LoginView):
         user = self.client.get_user(access_token)
         user.backend = self.client.backend
         login(request, user)
-        next = self.get_next()
-        return HttpResponseRedirect(next)
+        next_ = self.get_next()
+        return HttpResponseRedirect(next_)
 
 
 class Client:
