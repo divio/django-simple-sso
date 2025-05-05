@@ -1,20 +1,20 @@
+import datetime
 from urllib.parse import urlparse, urlencode, urlunparse
 
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.http import (HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, QueryDict)
-from django.urls import reverse
 from django.urls import re_path
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic.base import View
 from itsdangerous import URLSafeTimedSerializer
+
 from simple_sso.sso_server.models import Token, Consumer
-import datetime
-from webservices.models import Provider
-from webservices.sync import provider_for_django
+from simple_sso.utils import BaseProvider, provider_wrapper
 
 
-class BaseProvider(Provider):
+class Provider(BaseProvider):
     max_age = 5
 
     def __init__(self, server):
@@ -28,7 +28,7 @@ class BaseProvider(Provider):
         return self.consumer.private_key
 
 
-class RequestTokenProvider(BaseProvider):
+class RequestTokenProvider(Provider):
     def provide(self, data):
         redirect_to = data['redirect_to']
         token = Token.objects.create(consumer=self.consumer, redirect_to=redirect_to)
@@ -87,8 +87,8 @@ class AuthorizeView(View):
             return self.access_denied()
 
     def handle_unauthenticated_user(self):
-        next = '%s?%s' % (self.request.path, urlencode([('token', self.token.request_token)]))
-        url = '%s?%s' % (reverse(self.server.auth_view_name), urlencode([('next', next)]))
+        next_ = '%s?%s' % (self.request.path, urlencode([('token', self.token.request_token)]))
+        url = '%s?%s' % (reverse(self.server.auth_view_name), urlencode([('next', next_)]))
         return HttpResponseRedirect(url)
 
     def access_denied(self):
@@ -105,7 +105,7 @@ class AuthorizeView(View):
         return HttpResponseRedirect(url)
 
 
-class VerificationProvider(BaseProvider, AuthorizeView):
+class VerificationProvider(Provider, AuthorizeView):
     def provide(self, data):
         token = data['access_token']
         try:
@@ -167,9 +167,9 @@ class Server:
 
     def get_urls(self):
         return [
-            re_path(r'^request-token/$', provider_for_django(self.request_token_provider(server=self)),
+            re_path(r'^request-token/$', provider_wrapper(self.request_token_provider(server=self)),
                     name='simple-sso-request-token'),
             re_path(r'^authorize/$', self.authorize_view.as_view(server=self), name='simple-sso-authorize'),
-            re_path(r'^verify/$', provider_for_django(
+            re_path(r'^verify/$', provider_wrapper(
                     self.verification_provider(server=self)), name='simple-sso-verify'),
         ]

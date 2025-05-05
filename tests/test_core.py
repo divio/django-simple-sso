@@ -6,13 +6,36 @@ from django.contrib.auth.hashers import is_password_usable
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.test.testcases import TestCase
+from django.urls import reverse
+
 from simple_sso.sso_server.models import Token, Consumer
+from simple_sso.utils import gen_secret_key, SyncConsumer
 from tests.urls import test_client
 from tests.utils.context_managers import (SettingsOverride,
                                           UserLoginContext)
-from simple_sso.utils import gen_secret_key
-from django.urls import reverse
-from webservices.sync import DjangoTestingConsumer
+
+
+class TestingConsumer(SyncConsumer):
+    def __init__(self, test_client_, base_url, public_key, private_key):
+        self.test_client = test_client_
+        super(SyncConsumer, self).__init__(base_url, public_key, private_key)
+
+    def build_url(self, path):
+        return path
+
+    def send_request(self, url, data, headers):
+        headers = {
+            'HTTP_%s' % header.upper().replace('-', '_'): value
+            for header, value in headers.items()
+        }
+        response = self.test_client.post(
+            url,
+            data=data,
+            content_type='application/json',
+            **headers
+        )
+        self.raise_for_status(response.status_code, response.content)
+        return response.content
 
 
 class SimpleSSOTests(TestCase):
@@ -24,7 +47,7 @@ class SimpleSSOTests(TestCase):
         def get(url, params={}, headers={}, cookies=None, auth=None, **kwargs):
             return self.client.get(url, params)
         requests.get = get
-        test_client.consumer = DjangoTestingConsumer(
+        test_client.consumer = TestingConsumer(
             self.client, test_client.server_url, test_client.public_key, test_client.private_key)
 
     def _get_consumer(self):
