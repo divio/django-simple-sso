@@ -2,6 +2,12 @@
 Changelog
 =========
 
+1.3.0 (2025-05-05)
+==================
+
+* Remove the abandoned dependency `webservices`, causing issues in the newer python versions because of the use of reserved names.
+
+
 1.2.0 (2022-12-14)
 ==================
 
