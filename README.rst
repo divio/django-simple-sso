@@ -206,17 +206,12 @@ You can run tests by executing::
     virtualenv env
     source env/bin/activate
     pip install -r tests/requirements.txt
-    python setup.py test
-
+    python ./runtests.py
 
 .. |pypi| image:: https://badge.fury.io/py/django-simple.sso.svg
     :target: http://badge.fury.io/py/django-simple.sso
-.. |build| image:: https://travis-ci.org/divio/django-simple.sso.svg?branch=master
-    :target: https://travis-ci.org/divio/django-simple.sso
-.. |coverage| image:: https://codecov.io/gh/divio/django-simple.sso/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/divio/django-simple.sso
 
-.. |python| image:: https://img.shields.io/badge/python-3.5+-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-3.10+-blue.svg
     :target: https://pypi.org/project/django-simple.sso/
-.. |django| image:: https://img.shields.io/badge/django-2.2,%203.0,%203.1-blue.svg
+.. |django| image:: https://img.shields.io/badge/django-4.2,%205.2,%206.0-blue.svg
     :target: https://www.djangoproject.com/
