@@ -1,0 +1,3 @@
+[flake8]
+exclude = build,.git,.tox
+max-line-length = 88
