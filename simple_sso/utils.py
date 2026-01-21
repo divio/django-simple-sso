@@ -1,27 +1,27 @@
 import string
 from random import SystemRandom
-from urllib.parse import urlparse, urlunparse, urljoin
+from urllib.parse import urljoin, urlparse, urlunparse
 
 import requests
+from itsdangerous import BadSignature, SignatureExpired, TimedSerializer
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from itsdangerous import TimedSerializer, SignatureExpired, BadSignature
-
 from simple_sso.exceptions import BadRequest, WebserviceError
 
 random = SystemRandom()
 
 KEY_CHARACTERS = string.ascii_letters + string.digits
-PUBLIC_KEY_HEADER = 'x-services-public-key'
+PUBLIC_KEY_HEADER = "x-services-public-key"
 
 
 def default_gen_secret_key(length=40):
-    return ''.join([random.choice(KEY_CHARACTERS) for _ in range(length)])
+    return "".join([random.choice(KEY_CHARACTERS) for _ in range(length)])
 
 
 def gen_secret_key(length=40):
-    generator = getattr(settings, 'SIMPLE_SSO_KEYGENERATOR', default_gen_secret_key)
+    generator = getattr(settings, "SIMPLE_SSO_KEYGENERATOR", default_gen_secret_key)
     return generator(length)
 
 
@@ -29,15 +29,17 @@ def _split_dsn(dsn):
     parse_result = urlparse(dsn)
     host = parse_result.hostname
     if parse_result.port:
-        host += ':%s' % parse_result.port
-    base_url = urlunparse((
-        parse_result.scheme,
-        host,
-        parse_result.path,
-        parse_result.params,
-        parse_result.query,
-        parse_result.fragment,
-    ))
+        host += ":%s" % parse_result.port
+    base_url = urlunparse(
+        (
+            parse_result.scheme,
+            host,
+            parse_result.path,
+            parse_result.params,
+            parse_result.query,
+            parse_result.fragment,
+        )
+    )
     return base_url, parse_result.username, parse_result.password
 
 
@@ -53,12 +55,12 @@ class BaseConsumer(object):
         return cls(base_url, public_key, private_key)
 
     def consume(self, path, data, max_age=None):
-        if not path.startswith('/'):
+        if not path.startswith("/"):
             raise ValueError("Paths must start with a slash")
         signed_data = self.signer.dumps(data)
         headers = {
             PUBLIC_KEY_HEADER: self.public_key,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         }
         url = self.build_url(path)
         body = self.send_request(url, data=signed_data, headers=headers)
@@ -68,8 +70,7 @@ class BaseConsumer(object):
         return self.signer.loads(body, max_age=max_age)
 
     def send_request(self, url, data, headers):
-        raise NotImplementedError(
-            'Implement send_request on BaseConsumer subclasses')
+        raise NotImplementedError("Implement send_request on BaseConsumer subclasses")
 
     @staticmethod
     def raise_for_status(status_code, message):
@@ -79,7 +80,7 @@ class BaseConsumer(object):
             raise WebserviceError(message)
 
     def build_url(self, path):
-        path = path.lstrip('/')
+        path = path.lstrip("/")
         return urljoin(self.base_url, path)
 
 
@@ -99,22 +100,22 @@ class BaseProvider(object):
 
     def provide(self, data):
         raise NotImplementedError(
-            'Subclasses of services.models.Provider must implement '
-            'the provide method'
+            "Subclasses of services.models.Provider must implement "
+            "the provide method"
         )
 
     def get_private_key(self, public_key):
         raise NotImplementedError(
-            'Subclasses of services.models.Provider must implement '
-            'the get_private_key method'
+            "Subclasses of services.models.Provider must implement "
+            "the get_private_key method"
         )
 
     def report_exception(self):
         pass
 
     def get_response(self, method, signed_data, get_header):
-        if method != 'POST':
-            return 405, ['POST']
+        if method != "POST":
+            return 405, ["POST"]
         public_key = get_header(PUBLIC_KEY_HEADER, None)
         if not public_key:
             return 400, "No public key"
@@ -130,7 +131,7 @@ class BaseProvider(object):
             return 400, "Bad Signature"
         try:
             raw_response_data = self.provide(data)
-        except:
+        except Exception:
             self.report_exception()
             return 400, "Failed to process the request"
         response_data = signer.dumps(raw_response_data)
@@ -140,11 +141,11 @@ class BaseProvider(object):
 def provider_wrapper(provider):
     def provider_view(request):
         def get_header(key, default):
-            django_key = 'HTTP_%s' % key.upper().replace('-', '_')
+            django_key = "HTTP_%s" % key.upper().replace("-", "_")
             return request.META.get(django_key, default)
 
         method = request.method
-        if getattr(request, 'body', None):
+        if getattr(request, "body", None):
             signed_data = request.body
         else:
             signed_data = request.raw_post_data

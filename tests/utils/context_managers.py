@@ -39,14 +39,15 @@ class UserLoginContext:
         self.user = user
 
     def __enter__(self):
-        loginok = self.testcase.client.login(username=self.user.username,
-                                             password=self.user.username)
-        self.old_user = getattr(self.testcase, 'user', None)
+        loginok = self.testcase.client.login(
+            username=self.user.username, password=self.user.username
+        )
+        self.old_user = getattr(self.testcase, "user", None)
         self.testcase.user = self.user
         self.testcase.assertTrue(loginok)
 
     def __exit__(self, exc, value, tb):
         self.testcase.user = self.old_user
         if not self.testcase.user:
-            delattr(self.testcase, 'user')
+            delattr(self.testcase, "user")
         self.testcase.client.logout()
