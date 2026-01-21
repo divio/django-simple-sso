@@ -1,0 +1,7 @@
+[tool.black]
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+default_section = "THIRDPARTY"
+known_first_party = "django"

@@ -1,5 +1,4 @@
 import os
-import sys
 
 
 urlpatterns = []
@@ -7,7 +6,6 @@ urlpatterns = []
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:'
     }
 }
 
@@ -45,44 +43,14 @@ TEMPLATES = [
     },
 ]
 
-MIDDLEWARES = [
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
 
-def runtests():
-    from django import setup
-    from django.conf import settings
-    from django.test.utils import get_runner
-
-    settings.configure(
-        INSTALLED_APPS=INSTALLED_APPS,
-        ROOT_URLCONF=ROOT_URLCONF,
-        DATABASES=DATABASES,
-        TEST_RUNNER='django.test.runner.DiscoverRunner',
-        TEMPLATES=TEMPLATES,
-        MIDDLEWARE=MIDDLEWARES,
-        SSO_PRIVATE_KEY='private',
-        SSO_PUBLIC_KEY='public',
-        SSO_SERVER='http://localhost/server/',
-        SECRET_KEY="secret-key-for-tests",
-    )
-    setup()
-
-    # Run the test suite, including the extra validation tests.
-    TestRunner = get_runner(settings)
-
-    test_runner = TestRunner(verbosity=1, interactive=False, failfast=False)
-    failures = test_runner.run_tests(INSTALLED_APPS)
-    return failures
-
-
-def run():
-    failures = runtests()
-    sys.exit(failures)
-
-
-if __name__ == '__main__':
-    run()
+SSO_PRIVATE_KEY='private'
+SSO_PUBLIC_KEY='public'
+SSO_SERVER='http://localhost/server/'
+SECRET_KEY="secret-key-for-tests"
