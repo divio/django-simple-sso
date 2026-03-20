@@ -41,7 +41,7 @@ class Consumer(models.Model):
         max_length=64, unique=True, default=ConsumerSecretKeyGenerator("public_key")
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def rotate_keys(self):
