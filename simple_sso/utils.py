@@ -145,13 +145,9 @@ def provider_wrapper(provider):
             return request.META.get(django_key, default)
 
         method = request.method
-        if getattr(request, "body", None):
-            signed_data = request.body
-        else:
-            signed_data = request.raw_post_data
         status_code, data = provider.get_response(
             method,
-            signed_data,
+            request.body,
             get_header,
         )
         return HttpResponse(data, status=status_code)
