@@ -174,6 +174,17 @@ class SimpleSSOTests(TestCase):
             for key in ["username", "email", "first_name", "last_name"]:
                 self.assertEqual(getattr(client_user, key), getattr(server_user, key))
 
+    def test_provider_empty_body(self):
+        consumer = self._get_consumer()
+        response = self.client.post(
+            reverse("simple-sso-request-token"),
+            data=b"",
+            content_type="application/json",
+            HTTP_X_SERVICES_PUBLIC_KEY=consumer.public_key,
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b"Bad Signature")
+
     def test_custom_keygen(self):
         # WARNING: The following test uses a key generator function that is
         # highly insecure and should never under any circumstances be used in

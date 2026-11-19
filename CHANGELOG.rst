@@ -5,6 +5,7 @@ Changelog
 1.4.0 (2026-03-XX)
 ==================
 
+* Fixed `auth/verify` crash on requests with empty body.
 * Dropped support for Python 3.5, 3.6, 3.7, 3.8, and 3.9
 * Dropped support for Django 2.2, 3.0, and 3.1
 * Confirmed support for Python 3.10, 3.11, 3.12, and 3.13
