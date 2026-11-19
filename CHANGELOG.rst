@@ -2,9 +2,10 @@
 Changelog
 =========
 
-1.4.0 (2026-11-19)
+1.4.1 (2026-11-19)
 ==================
 
+* Fixed README.rst.
 * Fixed `auth/verify` crash on requests with empty body.
 * Dropped support for Python 3.5, 3.6, 3.7, 3.8, and 3.9
 * Dropped support for Django 2.2, 3.0, and 3.1

@@ -2,7 +2,7 @@
 django-simple-sso
 =================
 
-|pypi| |build| |coverage|
+|pypi| |build|
 
 
 Documentation
@@ -210,6 +210,8 @@ You can run tests by executing::
 
 .. |pypi| image:: https://badge.fury.io/py/django-simple.sso.svg
     :target: http://badge.fury.io/py/django-simple.sso
+.. |build| image:: https://github.com/divio/django-simple-sso/actions/workflows/tests.yml/badge.svg?branch=master
+    :target: https://github.com/divio/django-simple-sso/actions/workflows/tests.yml
 
 .. |python| image:: https://img.shields.io/badge/python-3.10+-blue.svg
     :target: https://pypi.org/project/django-simple.sso/
