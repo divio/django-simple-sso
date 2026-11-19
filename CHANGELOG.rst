@@ -2,7 +2,7 @@
 Changelog
 =========
 
-1.4.0 (2026-03-XX)
+1.4.0 (2026-11-19)
 ==================
 
 * Fixed `auth/verify` crash on requests with empty body.
