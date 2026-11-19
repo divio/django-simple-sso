@@ -42,6 +42,7 @@ setup(
     license="BSD-3-Clause",
     description="Simple SSO for Django",
     long_description=open("README.rst").read(),
+    long_description_content_type="text/x-rst",
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
